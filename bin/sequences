@@ -1,0 +1,77 @@
+#!/bin/bash -e
+
+ROOT_DIR=$(realpath $(dirname $0)/..)
+
+CONFIG_FILE=validator_config.json
+
+if [ $# -eq 4 ]; then
+    # Four arguments provided - overwrite validator_config and use
+
+    project_id=$1
+    site_model=$2
+    device_id=$3
+    serial_no=$4
+    key_file=`jq -r .key_file $CONFIG_FILE`
+
+    cat <<EOF > $CONFIG_FILE
+{
+  "project_id": "$project_id",
+  "site_model": "$site_model",
+  "device_id": "$device_id",
+  "serial_no": "$serial_no",
+  "key_file": "$key_file"
+}
+EOF
+    echo Target project $project_id
+    echo Site model $site_model
+    echo Target device $device_id
+    echo Device serial $serial_no
+
+elif [ $# -eq 0 ]; then
+    # no arguments provided - use validator_config directly
+
+    project_id=`jq -r .project_id $CONFIG_FILE`
+    site_model=`jq -r .site_model $CONFIG_FILE`
+    device_id=`jq -r .device_id $CONFIG_FILE`
+    serial_no=`jq -r .serial_no $CONFIG_FILE`
+
+    echo Target project $project_id
+    echo Site model $site_model
+    echo Target device $device_id
+    echo Device serial $serial_no
+
+    awc=$(echo $project_id $site_model $device_id $serial_no | wc -w)
+    if [[ $awc -ne 4 ]]; then
+        echo Missing configuration paramaters.
+        exit -1
+    fi
+else
+    # Display usage
+
+    echo $0 to use $CONFIG_FILE
+    echo $0 PROJECT_ID SITE_MODEL DEVICE_ID SERIAL_NO
+    exit -1
+fi
+
+exit
+
+site_path=$(realpath $1)
+project_id=$2
+subscription=$3
+shift 3
+
+if [ ! -f $site_path/cloud_iot_config.json ]; then
+    echo cloud_iot_config.json not found at $site_path
+    false
+fi
+
+echo Building validator...
+$ROOT_DIR/validator/bin/build > /dev/null
+
+echo Running tools version `(cd $ROOT_DIR; git describe)`
+
+validator/bin/build
+
+JARFILE=validator/build/libs/validator-1.0-SNAPSHOT-all.jar
+JAVA_CMD="java -cp $JARFILE org.junit.runner.JUnitCore"
+$JAVA_CMD com.google.daq.mqtt.validator.validations.BaselineValidator
