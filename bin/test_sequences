@@ -23,7 +23,7 @@ echo Target device $device_id
 echo Device serial $serial_no
 
 awc=$(echo $project_id $site_model $device_id $serial_no | wc -w)
-if [[ $awc != 4 ]]; then
+if [[ $awc -ne 4 ]]; then
     echo Missing configuration paramaters.
     exit -1
 fi
