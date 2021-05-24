@@ -53,20 +53,8 @@ else
     exit -1
 fi
 
-exit
-
-site_path=$(realpath $1)
-project_id=$2
-subscription=$3
-shift 3
-
-if [ ! -f $site_path/cloud_iot_config.json ]; then
-    echo cloud_iot_config.json not found at $site_path
-    false
-fi
-
 echo Building validator...
-$ROOT_DIR/validator/bin/build > /dev/null
+$ROOT_DIR/validator/bin/build
 
 echo Running tools version `(cd $ROOT_DIR; git describe)`
 
