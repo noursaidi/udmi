@@ -39,3 +39,4 @@ They key steps to setup the dedicated project are as follows:
 The workflow can be tested with an empty commit 
 (`git commit --allow-empty -m "Blank commit to trigger CI"; git push`). 
 On an unmodified branch, these tests should pass if correctly configured
+
