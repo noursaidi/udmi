@@ -1,4 +1,4 @@
-[**UDMI**](../../../) \> [**Docs**](../../) \> [**Specs**](../) \> [**Sequences**](./) 
+[**UDMI**](../../../) \> [**Docs**](../../) \> [**Specs**](../)
 
 # Sequences
 - [config](config.md)
