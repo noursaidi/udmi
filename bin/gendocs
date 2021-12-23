@@ -60,4 +60,4 @@ done
 # Add navbar
 navbar=$(cat etc/schema_navbar.html)
 navbar=$(printf '%q ' $navbar)
-find $OUTPUT_DIR -type f -exec gsed -i -E "s;(<body[^>]*>);\1$navbar;g" {} \;
+find $OUTPUT_DIR -type f -exec sed -i -E "s;(<body[^>]*>);\1$navbar;g" {} \;
