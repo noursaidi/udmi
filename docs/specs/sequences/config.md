@@ -1,3 +1,6 @@
+[**UDMI**](../../../) \> [**Docs**](../../) \> [**Specs**](../) \> [**Sequences**](./) 
+\> [Config](#)
+
 # Config & State Transactions
 
 * The `state` and `config` messages work together to represent a transactional state between the cloud and device.
