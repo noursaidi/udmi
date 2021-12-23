@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
-\> [Tech Stack](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Specs**](./)
+/ [Tech Stack](#)
 
 # UDMI Technology Stack
 

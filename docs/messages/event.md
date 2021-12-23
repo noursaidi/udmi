@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Messages**](./)
-\> [Events](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Messages**](./)
+/ [Events](#)
 
 # Events
 

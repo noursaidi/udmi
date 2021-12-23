@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
-\> [Metadata](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Specs**](./)
+/ [Metadata](#)
 
 # Metadata Description File
 

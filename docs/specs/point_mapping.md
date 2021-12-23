@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
-\> [Point Mapping](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Specs**](./)
+/ [Point Mapping](#)
 
 # Pointset Specification
 

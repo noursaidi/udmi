@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Tools**](./)
-\> [Registrar](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Tools**](./)
+/ [Registrar](#)
 
 # Registrar Overview
 

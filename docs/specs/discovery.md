@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
-\> [Discovery](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Specs**](./)
+/ [Discovery](#)
 
 # Discovery and Enumeration
 

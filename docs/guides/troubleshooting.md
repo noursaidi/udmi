@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Guides**](./)
-\> [Troubleshooting](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Guides**](./)
+/ [Troubleshooting](#)
 
 # Troubleshooting
 

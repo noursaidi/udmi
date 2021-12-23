@@ -1,5 +1,5 @@
-[**UDMI**](../../../) \> [**Docs**](../../) \> [**Cloud**](../) \> [**GCP**](./)
-\> [Dashboard](#)
+[**UDMI**](../../../) / [**Docs**](../../) / [**Cloud**](../) / [**GCP**](./)
+/ [Dashboard](#)
 
 # UDMI Dashboard
 

@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Tools**](./)
-\> [Setup](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Tools**](./)
+/ [Setup](#)
 
 # UDMI Tools Setup
 

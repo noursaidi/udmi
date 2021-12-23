@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Messages**](./)
-\> [Status](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Messages**](./)
+/ [Status](#)
 
 # Status Objects
 

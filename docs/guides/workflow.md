@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Guides**](./)
-\> [Workflow](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Guides**](./)
+/ [Workflow](#)
 
 # UDMI Validation Workflow
 

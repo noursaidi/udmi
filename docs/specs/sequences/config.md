@@ -1,5 +1,5 @@
-[**UDMI**](../../../) \> [**Docs**](../../) \> [**Specs**](../) \> [**Sequences**](./) 
-\> [Config](#)
+[**UDMI**](../../../) / [**Docs**](../../) / [**Specs**](../) / [**Sequences**](./) 
+/ [Config](#)
 
 # Config & State Transactions
 

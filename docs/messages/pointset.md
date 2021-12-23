@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Messages**](./)
-\> [System](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Messages**](./)
+/ [System](#)
 
 # Pointset Specification
 

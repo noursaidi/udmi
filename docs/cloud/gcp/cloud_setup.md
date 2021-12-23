@@ -1,5 +1,5 @@
-[**UDMI**](../../../) \> [**Docs**](../../) \> [**Cloud**](../) \> [**GCP**](./)
-\> [Cloud Setup](#)
+[**UDMI**](../../../) / [**Docs**](../../) / [**Cloud**](../) / [**GCP**](./)
+/ [Cloud Setup](#)
 
 # Cloud Setup
 

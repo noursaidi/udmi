@@ -1,5 +1,5 @@
-[**UDMI**](../../../) \> [**Docs**](../../) \> [**Specs**](../) \> [**Sequences**](./) 
-\> [Writeback](#)
+[**UDMI**](../../../) / [**Docs**](../../) / [**Specs**](../) / [**Sequences**](./) 
+/ [Writeback](#)
 
 # Writeback
 
@@ -18,7 +18,7 @@ After receiving the config message, the device attempts to write the value to th
 The `value_state` field is an enumeration representing the status of a point's writeback attempt.
 
 Possible states for `value_state`:
-*  \<missing\> -- The `value_state` field is missing from this point. This means one of two things:
+*  \<missing/ -- The `value_state` field is missing from this point. This means one of two things:
       * The device is sending telemetry specified by the device as per normal operation. This is the more likely case.
       * The point’s config does not follow the UDMI spec for writeback. E.g. instead of specifying `set_value`, the config misspelled as ste_vlaue, which isn’t a valid field in UDMI, and is ignored by the device.
 * applied -- The cloud value is applied to the device point. The point should now be reporting as telemetry the value defined in the device’s config.

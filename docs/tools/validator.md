@@ -1,5 +1,5 @@
-[**UDMI**](../../) \> [**Docs**](../) \> [**Tools**](./)
-\> [Validator](#)
+[**UDMI**](../../) / [**Docs**](../) / [**Tools**](./)
+/ [Validator](#)
 
 # Validator Setup
 
