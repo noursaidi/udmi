@@ -1,8 +1,10 @@
+[**UDMI**](../) \> [Docs](./)
+
 # UDMI specification and tools
 
-## UDMI specification
+[**UDMI specification**](specs/)
 
-* UDMI definition
+UDMI definition
 * [Technology stack](./specs/tech_stack.md)
 * Messages
   * [envelope](./messages/envelope.md)
