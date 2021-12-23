@@ -1,3 +1,6 @@
+[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
+\> [Message Walk](#)
+
 # Illustrative Message Walk
 
 This document details a high-level overview of the path a message takes as it works its way

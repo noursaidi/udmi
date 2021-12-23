@@ -1,3 +1,6 @@
+[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
+\> [Proxy](#)
+
 # UDMI Proxy
 
 The _UDMI Proxy_ is a cloud-based capability to proxy UDMI/MQTT exchanges through an

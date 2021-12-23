@@ -1,3 +1,6 @@
+[**UDMI**](../../) \> [**Docs**](../) \> [**Messages**](./)
+\> [System](#)
+
 # Pointset Specification
 
 A `pointset` represents a set of points reporting telemetry data. This is the most common data, and should be stored in an appropriate time-series database.

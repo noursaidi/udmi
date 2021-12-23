@@ -1,3 +1,6 @@
+[**UDMI**](../../) \> [**Docs**](../) \> [**Messages**](./)
+\> [Status](#)
+
 # Status Objects
 
 The State and system/logentry messages both have `status` and `entries` sub-fields, respectivly, that

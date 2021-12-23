@@ -1,3 +1,6 @@
+[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
+\> [Gateway](#)
+
 # Device Gateway
 
 The _gateway_ functionality is used for systems that have legacy, heritage,

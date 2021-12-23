@@ -1,3 +1,6 @@
+[**UDMI**](../../) \> [**Docs**](../) \> [**Specs**](./)
+\> [Metadata](#)
+
 # Metadata Description File
 
 A device's `metadata.json` is a description about the device: a specification
