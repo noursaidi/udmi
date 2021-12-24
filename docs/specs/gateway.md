@@ -72,10 +72,10 @@ device, should be reported in the [`gateway` _block_](state.html#gateway) of the
 ```
 [_(full example)_](../../tests/state.tests/gateway.json)
 
-A [_logentry_](../../gencode/docs/event_system.html#logentries)) message should be used to detail the
-nature of the problem. If the gateway can attach successfully, any other
-errors, e.g. the inability to communicate with the device over the local
-network, should be indicated as part of the proxy device status block.
+A [_logentry_](../../gencode/docs/event_system.html#logentries)) message should be used to detail
+the nature of the problem. If the gateway can attach successfully, any other errors, e.g. the
+inability to communicate with the device over the local network, should be indicated as part of the
+proxy device status block.
 ```json
 {
     "pointset": {
@@ -91,19 +91,16 @@ network, should be indicated as part of the proxy device status block.
 
 ### telemetry
 
-[Telemety](../messages/event.md) from the gateway would primarily consist of standard
-messages, which
-provide a running comentary about gateway operation. Specificaly, if there
-is an error attaching, then there should be appropriate logging to help
-diagnose the problem.
+[Telemety](../messages/event.md) from the gateway would primarily consist of standard messages,
+which provide a running comentary about gateway operation. Specificaly, if there is an error
+attaching, then there should be appropriate logging to help diagnose the problem.
 
 ### metadata
 
-The [`gateway` block](../../gencode/docs/metadata.html#gateway) within the [metadata](metadata.md)  specifies
-any information necessary either for the
-initial (manual) configuration of the device or ongoing validation of
-operation. E.g., if a gateway device has a unique MAC address used for
-local communications, it would be indicated here.
+The [`gateway` block](../../gencode/docs/metadata.html#gateway) within the [metadata](metadata.md)
+specifies any information necessary either for the initial (manual) configuration of the device or
+ongoing validation of operation. E.g., if a gateway device has a unique MAC address used for local
+communications, it would be indicated here.
 ```json
 {
   ...
@@ -143,30 +140,42 @@ all other messages.
 [_(full example)_](../../tests/config.tests/proxy.json) 
 
 
-Additionally, the gateway is responsible for proxying all other supported
-operations of the config bundle. E.g., if a [_pointset_](../messages/pointset.md) has a [`set_value`](../../gencode/docs/config.html#pointset_points_pattern1_set_value) 
+Additionally, the gateway is responsible for proxying all other supported operations of the config
+bundle. E.g., if a [_pointset_](../messages/pointset.md) has a
+[`set_value`](../../gencode/docs/config.html#pointset_points_pattern1_set_value) 
 
 parameter specified, the gateway would need to convert that into the local protocol
 and trigger the required functionality.
 
 ### state
 
-There is no gateway-specific [_state_](../messages/state.md) information, but similarly to [_config_](../messages/config.md) the
-gateway is responsible for proxying all relevant state from the local device
-into the proxied device's state block. E.g., if the device is in an alarm
-state, then the gateway would have to transform that from the local format
-into the appropriate UDMI message.
+There is no gateway-specific [_state_](../messages/state.md) information, but similar to
+[_config_](../messages/config.md) the gateway is responsible for proxying all relevant state from
+the local device into the proxied device's state block. E.g., if the device is in an alarm state,
+then the gateway would have to transform that from the local format into the appropriate UDMI
+message.
 
 ### telemetry
 
-[Telemetry](../messages/telemetry.md) is handled similarly, with the gateway responsible for proxying data
-from local devices through to UDMI. In many cases, this would be translating
-specific device points into a [_pointset_ message](../../tests/event_pointset.tests/example.json).
+[Telemetry](../messages/telemetry.md) is handled similarly, with the gateway responsible for
+proxying data from local devices through to UDMI. In many cases, this would be translating specific
+device points into a [_pointset_ message](../../tests/event_pointset.tests/example.json).
 
 ### metadata
+The [`localnet` block](../../gencode/docs/metadata.html#localnet) within the [metadata](metadata.md)
+describes the presence of the device on a local network. This can/should be used for initial
+programming and configuration of the device, or to validate proper device configuration. The gateway
+implementation itself would not directly deal with this block.
 
-A [proxy device metadata section](../../tests/metadata.tests/proxy.json) describes
-[_localnet_ block](../../gencode/docs/metadata.html#localnet)with the presence of the
-device on a local network. This can/should be used for initial programming
-and configuration of the device, or to validate proper device configuration.
-The gateway implementation itself would not directly deal with this block.
+```json
+{
+    "localnet": {
+    "subsystem": {
+      "bacnet": {
+        "local_id": "0x82eecd"
+      }
+    }
+  }
+}
+```
+[_(full example)_](../../tests/metadata.tests/proxy.json)
