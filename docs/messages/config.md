@@ -1,15 +1,33 @@
 # Config block
 
-(This is a somewhat temporary placeholder until better documentation can be written.)
-
 The UDMI config block species the
 [Cloud IoT Core Config](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)
-block that controlls a device's intended behavior.
+block that controls a device's intended behavior.
 
 It is composed of specific sub-entries for each sub-system { _system_, _pointset_, _gateway_, etc... }.
 
-This [working example](../../tests/config.tests/example.json) shows how a typical `config` message
-is constructed.
+An example `config` message is below 
+
+```json
+{
+  "version": 1,
+  "timestamp": "2018-08-26T21:39:29.364Z",
+  "system": {
+    "min_loglevel": 500
+  },
+  "pointset": {
+    "sample_limit_sec": 2,
+    "sample_rate_sec": 500,
+    "points": {
+      "return_air_temperature_sensor": {
+      },
+      "nexus_sensor": {
+        "ref": "ziuewwedf"
+      }
+    }
+  }
+}
+```
 
 ## Config Message
 

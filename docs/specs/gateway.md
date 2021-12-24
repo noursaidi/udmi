@@ -40,7 +40,18 @@ native (e.g. BacNET) communications and UDMI-based messages.
 
 ### config
 
-The [gateway config block](../../tests/config.tests/gateway.json)
+The [gateway block](config.html#gateway) in the [config](../messages/config.md)
+
+```json
+{
+  ...
+  "gateway": {
+    "proxy_ids": [ "AHU-123", "SMS-81", "991" ]
+  }
+}
+```
+[_(full example)_](udmi/tests/config.tests/gateway.json)
+
 simply specifies the list of target proxy devices.
 On a config update, the gateway is responsible for handling any change in
 this list (added or removed devices). The details of proxied devices are
@@ -50,27 +61,57 @@ size in cases where there are a large number of devices.
 ### state
 
 Any attach errors, e.g. the gateway can not successfully attach to the target
-device, should be reported in the [gateway state](../../tests/state.tests/gateway.json)
-and a _logentry_ message used to detail the
+device, should be reported in the [`gateway` _block_](state.html#gateway) of the [state](../messages/state.md) message
+
+```json
+{
+  ...
+  "gateway": {
+    "error_ids": [ "991", "SMS-91" ]
+  }
+```
+[_(full example)_](../../tests/state.tests/gateway.json)
+
+A [_logentry_](../../gencode/docs/event_system.html#logentries)) message should be used to detail the
 nature of the problem. If the gateway can attach successfully, any other
 errors, e.g. the inability to communicate with the device over the local
 network, should be indicated as part of the proxy device status block.
+```json
+{
+    "pointset": {
+        "points": {
+        "return_air_temperature_sensor": {
+            "ref": "BV23.present_value"
+        }
+        }
+    }
+}
+```
+[_(full example)_](../../tests/state.tests/gateway.json)
 
 ### telemetry
 
-Telemety from the gateway would primarily consist of standard
-[_system_](../../tests/event_pointset.tests/example.json) messages, which
+[Telemety](../messages/event.md) from the gateway would primarily consist of standard
+messages, which
 provide a running comentary about gateway operation. Specificaly, if there
 is an error attaching, then there should be appropriate logging to help
 diagnose the problem.
 
 ### metadata
 
-The gateway [metadata block](../../tests/metadata.tests/gateway.json) specifies
+The [`gateway` block](../../gencode/docs/metadata.html#gateway) within the [metadata](metadata.md)  specifies
 any information necessary either for the
 initial (manual) configuration of the device or ongoing validation of
 operation. E.g., if a gateway device has a unique MAC address used for
 local communications, it would be indicated here.
+```json
+{
+  ...
+  "gateway": {
+    "proxy_ids": ["AHU-22"]
+  }
+```
+[_Full Example_](../../tests/metadata.tests/gateway.json) 
 
 ## Proxy Device Operation
 
@@ -81,21 +122,36 @@ cloud connection.
 
 ### config
 
-[Proxy device config blocks](../../tests/config.tests/proxy.json) contain a special
-_localnet_ section that
+Proxy device [_config_](../messages/config.md) contain a special
+[`localnet` block](../../gencode/docs/config.html#localnet) section that
 specifies information required by the gateway to contact the local device.
 E.g., the fact that a device is 'BacNET' and also the device's BacNET object
 ID. Based on this, the gateway can communicate with the target device and proxy
 all other messages.
+```json
+{
+  ...
+ "localnet": {
+    "subsystem": {
+      "bacnet": {
+        "local_id": "0x78ce1900"
+      }
+    }
+  }
+}
+```
+[_(full example)_](../../tests/config.tests/proxy.json) 
+
 
 Additionally, the gateway is responsible for proxying all other supported
-operations of the config bundle. E.g., if a _pointset_ "set_value" parameter
-is specified, the gateway would need to convert that into the local protocol
+operations of the config bundle. E.g., if a [_pointset_](../messages/pointset.md) has a [`set_value`](../../gencode/docs/config.html#pointset_points_pattern1_set_value) 
+
+parameter specified, the gateway would need to convert that into the local protocol
 and trigger the required functionality.
 
 ### state
 
-There is no gateway-specific _state_ information, but similarly to _config_ the
+There is no gateway-specific [_state_](../messages/state.md) information, but similarly to [_config_](../messages/config.md) the
 gateway is responsible for proxying all relevant state from the local device
 into the proxied device's state block. E.g., if the device is in an alarm
 state, then the gateway would have to transform that from the local format
@@ -103,14 +159,14 @@ into the appropriate UDMI message.
 
 ### telemetry
 
-Telemetry is handled similarly, with the gateway responsible for proxying data
+[Telemetry](../messages/telemetry.md) is handled similarly, with the gateway responsible for proxying data
 from local devices through to UDMI. In many cases, this would be translating
 specific device points into a [_pointset_ message](../../tests/event_pointset.tests/example.json).
 
 ### metadata
 
 A [proxy device metadata section](../../tests/metadata.tests/proxy.json) describes
-_localnet_ with the presence of the
+[_localnet_ block](../../gencode/docs/metadata.html#localnet)with the presence of the
 device on a local network. This can/should be used for initial programming
 and configuration of the device, or to validate proper device configuration.
 The gateway implementation itself would not directly deal with this block.

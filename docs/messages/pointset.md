@@ -1,17 +1,48 @@
-# Pointset Specification
+# Pointset
 
 A `pointset` represents a set of points reporting telemetry data. This is the most common data, and should be stored in an appropriate time-series database.
 
 Specific `point_names` within a `pointset` should be specified in _snake_case_ and adhere to the
 data ontology for the device (stipulated and verified outside of UDMI, e.g. [Digital Buildings Ontology](https://github.com/google/digitalbuildings/tree/master/ontology)).
 
+
+Pointset is represented in four locations
+- [Description](#DESCRIPTION)
+- [Metadata](#metadata)
+- [Telemetry](#telemetry)
+- [State](#state)
+- [Config](#config)
+
 ## Metadata
+
+https://noursaidi.github.io/udmi/gencode/docs/metadata.html#pointset
+
+```json
+{
+  ...
+  "pointset": {
+    "points": {
+      "return_air_temperature_sensor": {
+        "units": "Degrees-Celsius",
+        "baseline_value": 20,
+        "baseline_tolerance": 2
+      },
+      "room_setpoint": {
+        "writeable": true,
+        "units": "Degrees-Celsius",
+        "baseline_value": 20,
+        "baseline_state": "applied"
+      }
+    }
+  }
+}
+```
 
 The `metadata.pointset` subblock represents the abstract system expectation for what the device
 _should_ be doing, and how it _should_ be configured and operated. This block specifies the
 expected points that a device holds, along with, if the field is numeric, the expected units of those points.
 The general structure of a `pointset` block exists inside of a complete
-[metadata](../../tests/metadata.tests/example.json) message.
+metadata message
 
 * `pointset`: Top level block designator.
   * `points`: Collection of point names.
@@ -20,7 +51,29 @@ The general structure of a `pointset` block exists inside of a complete
 
 ## Telemetry
 
-A basic `pointset` [telemetry](../../tests/event_pointset.tests/example.json) message contains
+https://noursaidi.github.io/udmi/gencode/docs/event_pointset.html#points
+
+```json
+{
+  ...
+  "points": {
+    "reading_value": {
+      "present_value": 21.30108642578125
+    },
+    "nexus_sensor": {
+      "present_value": 21.1
+    },
+    "yoyo_motion_sensor": {
+      "present_value": true
+    },
+    "enum_value": {
+      "present_value": "hello"
+    }
+  }
+}
+```
+
+A basic `pointset` telemetry message contains
 the point data sent from a device. The message contains just the top-level `points` designator,
 while the `pointset` typing is applied as part of the [message envelope](envelope.md).
 
@@ -41,9 +94,33 @@ These messages may be indiscriminately dropped by the backend systems, so a peri
 must still be sent (as per `sample_rate_sec` below). Sending an update where all expected points are not
 included, without this flag, is considered a validation error.
 
+
+
 ## State
 
-The [state](../../tests/state.tests/example.json) message from a device contains a `pointset`
+https://faucetsdn.github.io/udmi/gencode/docs/state.html#pointset        
+
+```json
+{
+  ...
+  "pointset": {
+    "points": {
+      "return_air_temperature_sensor": {
+        "status": {
+          "message": "Invalid sample time",
+          "category": "device.config.validate",
+          "timestamp": "2018-08-26T21:39:28.364Z",
+          "level": 800
+        }
+      },
+      "nexus_sensor": {
+      }
+    }
+  }
+}
+```
+
+The [state]message from a device contains a `pointset`
 block with the following structure:
 
 * `pointset`: Top level block designator.
@@ -64,8 +141,28 @@ reason for an _invalid_ or _failure_ `value_state`).
 
 ## Config
 
+https://noursaidi.github.io/udmi/gencode/docs/config.html#pointset
+
+
+```json
+{
+  ...
+  "pointset": {
+    "sample_limit_sec": 2,
+    "sample_rate_sec": 500,
+    "points": {
+      "return_air_temperature_sensor": {
+      },
+      "nexus_sensor": {
+        "ref": "ziuewwedf"
+      }
+    }
+  }
+}
+```
+
 The [config](../../tests/config.tests/example.json) message for a device contains a `pointset`
-block with the following structure:
+block with the following structure:e
 
 * `pointset`: Top level block designator.
   * `sample_rate_sec`: Maximum time between samples for the device to send out a _complete_
