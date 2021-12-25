@@ -9,3 +9,17 @@ follow the same structure.
     - [System Statuses](../../gencode/docs/state.html#system_statuses)
 - [Logentry events](../../gencode/docs/event_system.html#logentries) are transitory event that
   happen, e.g. “connection failed”.
+
+## Example
+```json
+{
+...
+"statuses": {
+      "base_system": {
+        "message": "Tickity Boo",
+        "category": "device.state.com",
+        "timestamp": "2018-08-26T21:39:30.364Z",
+        "level": 600
+      }
+}
+```
