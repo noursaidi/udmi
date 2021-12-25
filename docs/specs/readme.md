@@ -2,12 +2,15 @@
 / [Specs](./)
 
 # Specs
-- [compliance](compliance.md)
-- [discovery](discovery.md)
-- [gateway](gateway.md)
-- [message_walk](message_walk.md)
+
+- [Sequences](sequences/) (e.g. as _writeback_ and _state_) 
+- [UDMI Compliance](compliance.md)
+- [Discovery and Enumeration](discovery.md)
+- [Gateways](gateway.md)
+- [Message Walk](message_walk.md)
 - [metadata](metadata.md)
-- [point_mapping](point_mapping.md)
-- [proxy](proxy.md)
-- [site_model](site_model.md)
-- [tech_stack](tech_stack.md)
+- [Point Mapping](point_mapping.md)
+- [Proxy](proxy.md)
+- [Tech Stack](tech_stack.md)
+- [Site Model](site_model.md)
+- [Messages](../messages/)
