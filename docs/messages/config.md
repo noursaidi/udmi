@@ -1,7 +1,10 @@
 [**UDMI**](../../) / [**Docs**](../) / [**Messages**](./)
 / [Config](#)
 
-# Config block
+# Config
+
+**Schema Definition:** [config.json](../../schema/config.json)
+ ([_View interactive_](../../gencode/docs/config.html))
 
 The UDMI config block species the
 [Cloud IoT Core Config](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)
