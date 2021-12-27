@@ -1,3 +1,6 @@
+[**UDMI**](../../) / [**Docs**](../) / [**Messages**](./)
+/ [Config](#)
+
 # Config block
 
 The UDMI config block species the

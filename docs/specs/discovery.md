@@ -1,3 +1,6 @@
+[**UDMI**](../../) / [**Docs**](../) / [**Specs**](./)
+/ [Discovery](#)
+
 # Discovery and Enumeration
 
 There's two related processes that are used to extract the
