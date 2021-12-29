@@ -43,7 +43,7 @@ native (e.g. BacNET) communications and UDMI-based messages.
 
 ### config
 
-The [gateway block](config.html#gateway) in the [config](../messages/config.md)
+The [gateway block](../../gencode/docs/config.html#gateway) in the [config](../messages/config.md)
 
 ```json
 {

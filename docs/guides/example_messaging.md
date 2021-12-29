@@ -12,6 +12,7 @@
 ## Introduction
 
 **Recommended reading**
+
 - [Tech primer](../tech_primer.md)
 - [UDMI documentation ](../)
 
@@ -51,7 +52,6 @@ These points have been named according to [DBO](../tech_primer.md) at the contro
 
 This is an example, in practice the system may comprise additional components and points
 not shown in the example. These would be incorporated in the same way. There are different ways and connectivity options to achiee the same functionality e.g. using [gateways](../specs/gateway.md)
-
 
 ## Site Model & Metadata
 
@@ -100,14 +100,17 @@ Metadata file saved as a `FCU-001/metadata.json` within the [site model](../spec
 }
 ```
 
-Additional fields, such as baseline values and testing targets omitted as well as optional. It is recommended these are filled where available and to 
+Additional fields, such as baseline values and testing targets omitted as well as optional
+descriptive fields. It is suggested these are filled in where available.
 
 ## Message Flow
 
 ![sequence diagram message flow](images/example-sequence-diagram.png)
 
 ### Initialization 
+
 #### (1) Initial Configuration
+
 Using the registrar tool, a configuration message is sent based on metadata
 
 ```json
@@ -118,8 +121,8 @@ Using the registrar tool, a configuration message is sent based on metadata
     "min_loglevel": 600
   },
   "pointset": {
-    "sample_limit_sec": 2,
-    "sample_rate_sec": 500,
+    "sample_limit_sec": 15,
+    "sample_rate_sec": 60,
     "points": {
       "cooling_valve_percentage_command": {
       },
@@ -137,6 +140,7 @@ Using the registrar tool, a configuration message is sent based on metadata
 ```
 
 #### (2) State
+
 After receiving a config message, the device sends a [state](../messages/state.md)[message as
 defined by [config and state sequence](../specs/sequences/config.md)
 
@@ -174,12 +178,13 @@ defined by [config and state sequence](../specs/sequences/config.md)
 
 #### (3) Telemetry (Pointset Event)
 
+The telemetry will send data at an interval according to the `sample_limit_sec` and
+`sample_rate_sec` from the [config](config.md) message
 
-Additional information - 
-
-The `sample_limit_sec` and the `sample_rate_sec` 500,
-
-In this example, telemetry will be sent every X seconds 
+In this example with the following parameters:
+* `sample_rate_sec`: 15
+* `sample_limit_sec`: 60
+The telemetry will be nominally sent every 60 seconds
 
 ```json
 {
@@ -205,13 +210,16 @@ In this example, telemetry will be sent every X seconds
 }
 ```
 
-Partial updates and CoV can be implemented
+[Partial updates and CoV](../messages/pointset.md#incremental-updates-and-cov) can be implemented
+into the telemetry if appropriate as described.
 
-### Writeback 
+### Writeback
+
 [Writeback](../specs/sequences/writeback.md) is the process cloud to device control by sending
 [config](../messages/config.md) messages
 
-#### (4) Config 
+#### (4) Config
+
 The temperature setpoint `zone_air_temperature_setpoint` is updated from the cloud by applying a
 `set_value` to the point in the [pointset](../messages/pointset.md)
 
@@ -243,6 +251,7 @@ The temperature setpoint `zone_air_temperature_setpoint` is updated from the clo
 ```
 
 #### (5) State
+
 A [state](../messages/state.md) message is sent back with the If the [writeback](../specs/sequences/writeback.md) was successfully applied, the [`value_state`](../specs/sequences/writeback.md#value-state-and-state) is set to applied.
 
 The `last_config` matches the value of the last config message recieved as described in the [state and config sequences](../specs/sequences/config.md) 
@@ -281,7 +290,7 @@ The `last_config` matches the value of the last config message recieved as descr
 
 #### (6) Telemetry
 
-The device continues to send the telemetry
+The device continues to send the telemetry within the sample interval
 
 ```json
 {

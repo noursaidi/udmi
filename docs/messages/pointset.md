@@ -195,4 +195,3 @@ If `sample_rate_sec` is not defined (or zero), then the system is expected to se
   }
 }
 ```
-
