@@ -1,7 +1,7 @@
 [**UDMI**](../../../) / [**Docs**](../../) / [**Specs**](../) / [**Sequences**](./) 
 / [Config](#)
 
-# Config & State Transactions
+# Config & State Sequence
 
 * The `state` and `config` messages work together to represent a transactional state between the cloud and device.
 * When any `config` is received, a `state` update should be generated with a corresponding last_update.
@@ -12,12 +12,15 @@
   `config` message, including when:
   * There is an update from an external source, e.g. a BMS or local controller
   * There is an update from internal logic 
+* Other [sequences](./) such as [writeback](writeback.md) may have specific behaviors relating to
+  state messages 
 
 ![State and config](images/state.png)
 
 ## Config Message
+
 - [Definition](../../messages/config.md)
-- [Schema](https://faucetsdn.github.io/udmi/gencode/docs/config.html)
+- [Schema](../../../gencode/docs/config.html)
 
 Example:
 ```JSON
@@ -39,8 +42,9 @@ Example:
 ```
 
 ## State Message
+
 - [Definition](../../messages/state.md)
-- [Schema](https://faucetsdn.github.io/udmi/gencode/docs/config.html)
+- [Schema](../../../gencode/docs/config.html)
 
 Example:
 ```json

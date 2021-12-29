@@ -137,7 +137,8 @@ Using the registrar tool, a configuration message is sent based on metadata
 ```
 
 #### (2) State
-After recieving a config message, the device sends a [state](../messages/state.md)[message as defined by [config and state sequence](../specs/sequences/config.md)
+After receiving a config message, the device sends a [state](../messages/state.md)[message as
+defined by [config and state sequence](../specs/sequences/config.md)
 
 ```json
 {
@@ -149,7 +150,7 @@ After recieving a config message, the device sends a [state](../messages/state.m
       "version": "3.2a"
     },
     "serial_no": "182732142",
-    "last_config": "2021-12-21T13:00:00.131Z",
+    "last_config": "2021-12-21T13:00:00.131Z", // Matches the timestamp of the last config message
     "operational": true
     },
   "pointset": {
@@ -202,16 +203,17 @@ In this example, telemetry will be sent every X seconds
     }
   }
 }
-
 ```
 
 Partial updates and CoV can be implemented
 
 ### Writeback 
-[Writeback](../specs/sequences/writeback.md) is the process of updating.
+[Writeback](../specs/sequences/writeback.md) is the process cloud to device control by sending
+[config](../messages/config.md) messages
 
 #### (4) Config 
-The setpoint is updated from the cloud
+The temperature setpoint `zone_air_temperature_setpoint` is updated from the cloud by applying a
+`set_value` to the point in the [pointset](../messages/pointset.md)
 
 ```json
 {
@@ -233,7 +235,7 @@ The setpoint is updated from the cloud
       "fan_speed_percentage_command": {
       },
       "zone_air_temperature_setpoint": {
-        "set_value": 18
+        "set_value": 18.0 // Update this point to the given 18
       }
     }
   }
@@ -241,10 +243,69 @@ The setpoint is updated from the cloud
 ```
 
 #### (5) State
-If the writeback was successfully applied, 
+A [state](../messages/state.md) message is sent back with the If the [writeback](../specs/sequences/writeback.md) was successfully applied, the [`value_state`](../specs/sequences/writeback.md#value-state-and-state) is set to applied.
 
+The `last_config` matches the value of the last config message recieved as described in the [state and config sequences](../specs/sequences/config.md) 
+
+
+```json
+{
+  "version": 1,
+  "timestamp": "2021-12-21T13:00:22.113Z",
+  "system": {
+    "make_model": "ACME FCU Controller", 
+    "firmware": {
+      "version": "3.2a"
+    },
+    "serial_no": "182732142",
+    "last_config": "2021-12-21T13:00:00.131Z", // Matches last config message
+    "operational": true
+    },
+  "pointset": {
+    "points": {
+      "cooling_valve_percentage_command": {
+      },
+      "supply_air_temperature_sensor": {
+      },
+      "return_air_temperature_sensor": {
+      },
+      "fan_speed_percentage_command": {
+      },
+      "zone_air_temperature_setpoint": {
+        "value_state": "applied" // Value was successfully updated
+      }
+    }
+  }
+}
+```
 
 #### (6) Telemetry
+
+The device continues to send the telemetry
+
+```json
+{
+  "version": 1,
+  "timestamp": "2021-12-21T13:00:03.053Z",
+  "points": {
+    "cooling_valve_percentage_command": {
+        "present_value": 100 // Example of system reaction to the cloud writeback command represented in the telemetry, e.g. cooling valve has been opened up to increase cooling capacity
+    },
+    "supply_air_temperature_sensor": {
+        "present_value": 17.1
+    },
+    "return_air_temperature_sensor": {
+        "present_value": 25.9
+    },
+    "fan_speed_percentage_command": {
+        "present_value": 100
+    },
+    "zone_air_temperature_setpoint": {
+        "present_value": 18.0 // The setpoint has been updated in the system
+    }
+  }
+}
+```
 
 
 ```

@@ -10,6 +10,9 @@ The UDMI config block species the
 [Cloud IoT Core Config](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)
 block that controls a device's intended behavior.
 
+Unless a config message has an [expiry](../specs/sequences/writeback.md#value-expiration), the latest
+config message is always considered present.
+
 It is composed of specific sub-entries for each sub-system { _system_, _pointset_, _gateway_, etc... }.
 
 An example `config` message is below 

@@ -12,6 +12,7 @@ _state_ updates from a device in under a second they should be coalessed into on
 (sent after an appropriate backoff timer) and not buffered (sending multiple messages).
 * `last_config` should be the timestamp _from_ the `timestamp` field of the last successfully
 parsed `config` message (not the timestamp the message was received/processed).
+* The state message are sent as a part of [sequences](../specs/sequences/)
 
 ## Example State Message
 
