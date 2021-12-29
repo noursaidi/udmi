@@ -1,5 +1,13 @@
 # UDMI Schema 
 
+**Documentation** - [docs/](docs/)
+
+**Schema** - [schema/](schema/) ([_Interactive viewer_](gencode/docs/))
+
+**Mailing list & discussion** - [udmi-discuss@googlegroups.com](https://groups.google.com/forum/#!forum/udmi-discuss)
+
+---
+
 The Universal Device Management Interface (UDMI) provides a high-level specification for the
 management and operation of physical IoT systems. This data is typically exchanged
 with a cloud entity that can maintain a "digital twin" or "shadow device" in the cloud. Please
@@ -13,14 +21,14 @@ By design, this schema is intended to be:
 * <b>I</b>nterface: Define an interface specification, rather than a client-library or
 RPC mechanism.
 
-See the associated [UDMI Tech Stack](docs/tech_stack.md) for details about transport mechanism
+See the associated [UDMI Tech Stack](docs/specs/tech_stack.md) for details about transport mechanism
 outside of the core schema definition. Nominally meant for use with
 [Googe's Cloud IoT Core](https://cloud.google.com/iot/docs/), it can be applied to any set
 of data or hosting setup.
 
 ## Recommended Workflow
 
-The [recommended workflow](docs/workflow.md) for UDMI covers using the _registrar_ and
+The [recommended workflow](docs/guides/workflow.md) for UDMI covers using the _registrar_ and
 _validator_ tools to configure and test a cloud project. Additionally, the _pubber_ tool
 is instrumental in setting up and testing the system independent of actual device setup.
 

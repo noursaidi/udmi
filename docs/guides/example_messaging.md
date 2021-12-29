@@ -1,11 +1,26 @@
+[**UDMI**](../../) / [**Docs**](../) / [**Guides**](./)
+/ [Example](#)
+
 # UDMI example
+
+## Contents
+
+- [Introduction](#introudction)
+- [Physical Setup](#phyiscal-setup)
+- [Message Flow](#message-flow)
+
+## Introduction
 
 **Recommended reading**
 - [Tech primer](../tech_primer.md)
 - [UDMI documentation ](../)
 
-This document describes a real world basic implementation of UDMI using a fan coil unit system as an
+This document describes a real world basic implementation of aspects UDMI using a fan coil unit system as an
 example
+
+Only basic message related functionality and not complete functionality.
+
+Project requirements may require additional functionality to what is shown here
 
 ## Physical Setup
 
@@ -19,8 +34,9 @@ For this example, the sample fan coil unit system comprises
 
 UDMI is implemented at the fan coil unit controller, which has an internet connection, and a UDMI  MQTT client
 
-The approach here is consistant with the [Digital Buildings Ontology (DBO)](../tech_primer.md). Conversely it is also possible and valid to represent each
-component as a logical device subject to project requirements
+The approach here is consistent with the [Digital Buildings Ontology (DBO)](../tech_primer.md).
+Conversely it is also possible and valid to represent each component as a [logical device](../tech_primer.md#) subject to
+project requirements
 
 The system has the following physical points, represented as analogue inputs/outputs on the controller
 - `cooling_valve_percentage_command`
@@ -29,7 +45,7 @@ The system has the following physical points, represented as analogue inputs/out
 - `fan_speed_percentage_command`
 
 The system additionally comprises the following virtual points
-- `zone_air_temperature_setpoint`"
+- `zone_air_temperature_setpoint`
 
 These points have been named according to [DBO](../tech_primer.md) at the controller.
 
@@ -82,25 +98,24 @@ Metadata file saved as a `FCU-001/metadata.json` within the [site model](../spec
     }
   }
 }
-
 ```
 
-Additional fields baseline values and testing targets omitted. It is recommended these are filled where available and to 
+Additional fields, such as baseline values and testing targets omitted as well as optional. It is recommended these are filled where available and to 
 
 ## Message Flow
 
 ![sequence diagram message flow](images/example-sequence-diagram.png)
 
-### Initiliasation 
+### Initialization 
 #### (1) Initial Configuration
 Using the registrar tool, a configuration message is sent based on metadata
 
 ```json
 {
   "version": 1,
-  "timestamp": "2018-08-26T21:39:29.364Z",
+  "timestamp": "2021-12-21T13:00:00.131Z",
   "system": {
-    "min_loglevel": 500
+    "min_loglevel": 600
   },
   "pointset": {
     "sample_limit_sec": 2,
@@ -119,31 +134,115 @@ Using the registrar tool, a configuration message is sent based on metadata
     }
   }
 }
-
 ```
 
-- `cooling_valve_percentage_command`
-- `supply_air_temperature_sensor`
-- `return_air_temperature_sensor`
-- `fan_speed_percentage_command`
-
-The system additionally comprises the following virtual points
-- `zone_air_temperature_setpoint`"
-
 #### (2) State
-link to sequence and state
+After recieving a config message, the device sends a [state](../messages/state.md)[message as defined by [config and state sequence](../specs/sequences/config.md)
 
+```json
+{
+  "version": 1,
+  "timestamp": "2021-12-21T13:00:01.215Z",
+  "system": {
+    "make_model": "ACME FCU Controller", 
+    "firmware": {
+      "version": "3.2a"
+    },
+    "serial_no": "182732142",
+    "last_config": "2021-12-21T13:00:00.131Z",
+    "operational": true
+    },
+  "pointset": {
+    "points": {
+      "cooling_valve_percentage_command": {
+      },
+      "supply_air_temperature_sensor": {
+      },
+      "return_air_temperature_sensor": {
+      },
+      "fan_speed_percentage_command": {
+      },
+      "zone_air_temperature_setpoint": {
+      }
+    }
+  }
+}
+```
 
 ### Operation
 
 #### (3) Telemetry (Pointset Event)
 
 
+Additional information - 
+
+The `sample_limit_sec` and the `sample_rate_sec` 500,
+
+In this example, telemetry will be sent every X seconds 
+
+```json
+{
+  "version": 1,
+  "timestamp": "2021-12-21T13:00:02.053Z",
+  "points": {
+    "cooling_valve_percentage_command": {
+        "present_value": 50
+    },
+    "supply_air_temperature_sensor": {
+        "present_value": 22.3
+    },
+    "return_air_temperature_sensor": {
+        "present_value": 26.1
+    },
+    "fan_speed_percentage_command": {
+        "present_value": 50
+    },
+    "zone_air_temperature_setpoint": {
+        "present_value": 26.0
+    }
+  }
+}
+
+```
+
+Partial updates and CoV can be implemented
+
 ### Writeback 
+[Writeback](../specs/sequences/writeback.md) is the process of updating.
 
 #### (4) Config 
+The setpoint is updated from the cloud
+
+```json
+{
+  "version": 1,
+  "timestamp": "2021-12-21T13:00:21.413Z",
+  "system": {
+    "min_loglevel": 600
+  },
+  "pointset": {
+    "sample_limit_sec": 2,
+    "sample_rate_sec": 500,
+    "points": {
+      "cooling_valve_percentage_command": {
+      },
+      "supply_air_temperature_sensor": {
+      },
+      "return_air_temperature_sensor": {
+      },
+      "fan_speed_percentage_command": {
+      },
+      "zone_air_temperature_setpoint": {
+        "set_value": 18
+      }
+    }
+  }
+}
+```
 
 #### (5) State
+If the writeback was successfully applied, 
+
 
 #### (6) Telemetry
 
