@@ -12,3 +12,7 @@ intended function of the device.
 * [_writeback_ control](./sequences/writeback.md), used for on-prem device control.
 * [_gateway_ proxy](gateway.md), used to proxy data for non-MQTT devices.
 * [_system_ basics](../messages/system.md), used for general monitoring and logging.
+
+## Compliance Matrix
+
+

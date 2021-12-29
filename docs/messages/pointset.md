@@ -20,7 +20,10 @@ Pointset is represented in four locations
 
 ## Metadata
 
-https://noursaidi.github.io/udmi/gencode/docs/metadata.html#pointset
+**Schema Definition:** [metadata_pointset.json](../../schema/metadata_pointset.json)
+ ([_View interactive_](../../gencode/docs/metadata.html#pointset))
+
+Example:
 
 ```json
 {
@@ -56,7 +59,34 @@ metadata message
 
 ## Telemetry
 
-https://noursaidi.github.io/udmi/gencode/docs/event_pointset.html#points
+**Schema Definition:** [event_pointset.json](../../schema/event_pointset.json)
+ ([_View interactive_](../../gencode/docs/event_pointset.html#points))
+
+A basic `pointset` telemetry message contains
+the point data sent from a device. The message contains just the top-level `points` designator,
+while the `pointset` typing is applied as part of the [message envelope](envelope.md).
+
+* `points`: Collection of point names.
+  * _{`point_name`}_: Point name.
+    * `present_value`: The specific point data reading.
+* `partial_update`: Optional indicator if this is an incremental update (not all points included).
+
+Telemetry update messages should be sent "as needed" or according to specific requirements as
+stipulated in the `config` block. The basic `pointset` telemetry message for a device should
+contain the values for all representative points from that device, as determined by the associated
+`config` block. If no points are specified in the `config` block, the device programming determines
+the representative points.
+
+### Incremental Updates and CoV
+
+Incremental updates (e.g. for COV) can send only the specific updated points as an optimization,
+while setting the top-level
+[`partial_update`](../../gencode/docs/event_pointset.html#partial_update) field to `true` These
+messages may be indiscriminately dropped by the backend systems, so a periodic full-update must
+still be sent (as per `sample_rate_sec` below). Sending an update where all expected points are not
+included, without this flag, is considered a validation error.
+
+### Example
 
 ```json
 {
@@ -74,37 +104,30 @@ https://noursaidi.github.io/udmi/gencode/docs/event_pointset.html#points
     "enum_value": {
       "present_value": "hello"
     }
-  }
+  },
+  "partial_update": false
 }
 ```
 
-A basic `pointset` telemetry message contains
-the point data sent from a device. The message contains just the top-level `points` designator,
-while the `pointset` typing is applied as part of the [message envelope](envelope.md).
-
-* `points`: Collection of point names.
-  * _{`point_name`}_: Point name.
-    * `present_value`: The specific point data reading.
-* `partial_update`: Optional indicator if this is an incremental update (not all points included).
-
-Telemetry update messages should be sent "as needed" or according to specific requirements as
-stipulated in the `config` block. The basic `pointset` telemetry message for a device should
-contain the values for all representative points from that device, as determined by the associated
-`config` block. If no points are specified in the `config` block, the device programming determines
-the representative points.
-
-Incremental updates (e.g. for COV) can send only the specific updated points as an optimization,
-while setting the top-level `partial_update` [field to `true`](../../tests/event_pointset.tests/partial.json).
-These messages may be indiscriminately dropped by the backend systems, so a periodic full-update
-must still be sent (as per `sample_rate_sec` below). Sending an update where all expected points are not
-included, without this flag, is considered a validation error.
-
-
-
 ## State
 
-https://faucetsdn.github.io/udmi/gencode/docs/state.html#pointset        
+**Schema Definition:** [state_pointset.json](../../schema/state_pointset.json)
+ ([_View interactive_](../../gencode/docs/state.html#pointset))
 
+The [state](state.md) message from a device contains a `pointset` block with the following
+structure:
+
+* `pointset`: Top level block designator.
+  * `points`: Collection of point names.
+    * _{`point_name`}_: Point name.
+      * (`status`): Optional [status](status.md) information about this point.
+      * (`value_state`): Optional enumeration indicating the 
+        [state of the points value.](../specs/sequences/writeback.md#state-and-value_state)
+
+In all cases, the points `status` field can be used to supply more information (e.g., the
+reason for an _invalid_ or _failure_ `value_state`).
+
+### Example 
 ```json
 {
   ...
@@ -125,46 +148,9 @@ https://faucetsdn.github.io/udmi/gencode/docs/state.html#pointset
 }
 ```
 
-The [state]message from a device contains a `pointset`
-block with the following structure:
-
-* `pointset`: Top level block designator.
-  * `points`: Collection of point names.
-    * _{`point_name`}_: Point name.
-      * (`status`): Optional [status](status.md) information about this point.
-      * (`value_state`): Optional enumeration indicating the state of the points value.
-
-Valid `value_state` settings include:
-* _<missing>_: No `set_value` _config_ has been specified, the source is device-native.
-* _applied_: The `set_value` _config_ has been successfully applied.
-* _overridden_: The _config_ setting is being overridden by another source.
-* _invalid_: A problem has been identified with the _config_ setting.
-* _failure_: The _config_ is fine, but a problem has been encountered applying the setting.
-
-In all cases, the points `status` field can be used to supply more information (e.g., the
-reason for an _invalid_ or _failure_ `value_state`).
-
 ## Config
 
-https://noursaidi.github.io/udmi/gencode/docs/config.html#pointset
-
-
-```json
-{
-  ...
-  "pointset": {
-    "sample_limit_sec": 2,
-    "sample_rate_sec": 500,
-    "points": {
-      "return_air_temperature_sensor": {
-      },
-      "nexus_sensor": {
-        "ref": "ziuewwedf"
-      }
-    }
-  }
-}
-```
+[Schema](../../gencode/docs/config.html#pointset)
 
 The [config](../../tests/config.tests/example.json) message for a device contains a `pointset`
 block with the following structure:e
@@ -190,3 +176,23 @@ then the device should determine on its own which points to report.
 
 If `sample_rate_sec` is not defined (or zero), then the system is expected to send an update at least every
 300 seconds (5 minutes as a default value). A negative value would mean "don't send updates."
+
+### Example 
+
+```json
+{
+  ...
+  "pointset": {
+    "sample_limit_sec": 2,
+    "sample_rate_sec": 500,
+    "points": {
+      "return_air_temperature_sensor": {
+      },
+      "nexus_sensor": {
+        "ref": "ziuewwedf"
+      }
+    }
+  }
+}
+```
+

@@ -12,7 +12,7 @@ devices and how they communicate with the cloud.
 An site model directory shows specific examples of how this would be constructed for a complete
 site. Typically, however, each site would have its own git repo (with the `cloud_iot_config.json`
 file in the repo root). For test and development, this only needs to be a on-disk directory.
-The [udmi_site_model](https://github.com/faucetsdn/udmi/blob/master/docs/site_model.md) repo
+The [udmi_site_model](https://github.com/faucetsdn/udmi_site_model) repo
 provides an up-to-date example of what a site model might look like (actively used by some
 of the integraiton tests).
 
@@ -28,7 +28,7 @@ The primary use of the site_model will be through the [registrar](../tools/regis
 
 ## `cloud_iot_config.json`
 
-```
+```json
 {
   "cloud_region": "us-central1",
   "site_name": "ZZ-TRI-FECTA",
