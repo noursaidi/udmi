@@ -1,8 +1,9 @@
-# UDMI Schema 
+# UDMI 
 
 **Documentation** - [docs/](docs/)
 
-**Schema** - [schema/](schema/) ([_Interactive viewer_](gencode/docs/))
+**Schema** - [schema/](https://github.com/faucetsdn/udmi/tree/master/schema)
+ ([🧬 _Interactive viewer_](gencode/docs/))
 
 **Mailing list & discussion** - [udmi-discuss@googlegroups.com](https://groups.google.com/forum/#!forum/udmi-discuss)
 
@@ -15,8 +16,8 @@ join the [udmi-discuss@googlegroups.com](https://groups.google.com/forum/#!forum
 mailing list for questions and discussion.
 
 By design, this schema is intended to be:
-* <b>U</b>niversal: Apply to all subsystems in a building, not a singular vertical solution.
-* <b>D</b>evice: Operations on an IoT _device_, a managed entity in physical space.
+* __U__niversal: Apply to all subsystems in a building, not a singular vertical solution.
+* **D**evice: Operations on an IoT _device_, a managed entity in physical space.
 * <b>M</b>anagement: Focus on device _management_, rather than command & control.
 * <b>I</b>nterface: Define an interface specification, rather than a client-library or
 RPC mechanism.

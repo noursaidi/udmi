@@ -20,7 +20,7 @@
 ## Config Message
 
 - [Definition](../../messages/config.md)
-- [Schema](../../../gencode/docs/config.html)
+- [🧬 Schema](../../../gencode/docs/config.html)
 
 Example:
 ```JSON

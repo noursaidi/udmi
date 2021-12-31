@@ -21,7 +21,7 @@
         </div>
 
     <div class="breadcrumbs"></div><span class="badge badge-dark value-type">Type: object</span><br/>
-<span class="description"><p><a href="https://github.com/faucetsdn/udmi/blob/master/docs/metadata.md">Metadata</a> is a description about the device: a specification about how the device should be configured and expectations about what the device should be doing.</p>
+<span class="description"><p><a href="https://github.com/faucetsdn/udmi/blob/master/docs/metadata.md">Metadata</a> is a description about the device: a specification about how the device should be configured and expectations about what the device should be doing. Defined by <code>metadata.json</code></p>
 </span> <span class="badge badge-info no-additional">No Additional Properties</span>
             
 
@@ -353,7 +353,7 @@
             />
         </svg>
     <a href="#system" onclick="anchorLink('system')">system</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
-<span class="description"><p>High-level sytem informaiton about the device.</p>
+<span class="description"><p>High-level system information about the device. Read more: <a href="https://github.com/faucetsdn/udmi/blob/master/docs/messages/system.md">https://github.com/faucetsdn/udmi/blob/master/docs/messages/system.md</a></p>
 </span>
 
      <span class="badge badge-info no-additional">No Additional Properties</span>
@@ -2368,7 +2368,8 @@
             />
         </svg>
     <a href="#pointset_points_pattern1_baseline_value" onclick="anchorLink('pointset_points_pattern1_baseline_value')">baseline_value</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
-
+<span class="description"><p>Represents the expected baseline value of the point</p>
+</span>
             
 
             
@@ -2426,7 +2427,8 @@
             />
         </svg>
     <a href="#pointset_points_pattern1_baseline_tolerance" onclick="anchorLink('pointset_points_pattern1_baseline_tolerance')">baseline_tolerance</a></div><span class="badge badge-dark value-type">Type: number</span><br/>
-
+<span class="description"><p>Maximum deviation from <code>baseline_value</code></p>
+</span>
             
 
             
@@ -2484,7 +2486,8 @@
             />
         </svg>
     <a href="#pointset_points_pattern1_baseline_state" onclick="anchorLink('pointset_points_pattern1_baseline_state')">baseline_state</a></div><span class="badge badge-dark value-type">Type: enum (of string)</span><br/>
-<div class="enum-value" id="pointset_points_pattern1_baseline_state_enum">
+<span class="description"><p>Expected state when <code>baseline_value</code> is set as the <code>set_value</code> for this point the config message</p>
+</span><div class="enum-value" id="pointset_points_pattern1_baseline_state_enum">
                 <h4>Must be one of:</h4>
                 <ul class="list-group"><li class="list-group-item enum-item">"applied"</li><li class="list-group-item enum-item">"updating"</li><li class="list-group-item enum-item">"overridden"</li><li class="list-group-item enum-item">"invalid"</li><li class="list-group-item enum-item">"failure"</li></ul>
                 </div>

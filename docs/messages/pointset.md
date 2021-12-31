@@ -112,7 +112,7 @@ included, without this flag, is considered a validation error.
 ## State
 
 **Schema Definition:** [state_pointset.json](../../schema/state_pointset.json)
- ([_View interactive_](../../gencode/docs/state.html#pointset))
+ ([🧬 _View interactive_](../../gencode/docs/state.html#pointset))
 
 The [state](state.md) message from a device contains a `pointset` block with the following
 structure:

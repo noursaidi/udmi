@@ -8,7 +8,7 @@
 - [Discovery and Enumeration](discovery.md)
 - [Gateways](gateway.md)
 - [Message Walk](message_walk.md)
-- [metadata](metadata.md)
+- [Metadata](metadata.md)
 - [Point Mapping](point_mapping.md)
 - [Proxy](proxy.md)
 - [Tech Stack](tech_stack.md)
