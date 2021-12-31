@@ -37,7 +37,7 @@ For this example, the sample fan coil unit system comprises
 
 UDMI is implemented at the fan coil unit controller, which has an internet connection, and a UDMI  MQTT client
 
-The approach here is consistent with the [🧬 Digital Buildings Ontology (DBO)](../tech_primer.md).
+The approach here is consistent with the [Digital Buildings Ontology (DBO)](../tech_primer.md).
 Conversely it is also possible and valid to represent each component as a [logical device](../tech_primer.md#) subject to
 project requirements
 
@@ -70,7 +70,7 @@ Metadata file saved as a `FCU-001/metadata.json` within the [site model](../spec
     },
     "physical_tag": {
       "asset": {
-        "guid": "bim://04aEp5ymD_$u5IxhJN2aGi", #test  dsa sad dsa das 
+        "guid": "bim://04aEp5ymD_$u5IxhJN2aGi",
         "site": "US-SFO-XYY",
         "name": "FCU-001"
       }
@@ -143,7 +143,7 @@ Using the registrar tool, a configuration message is sent based on metadata
 
 #### (2) State
 
-After receiving a config message, the device sends a [state](../messages/state.md)[message as
+After receiving a config message, the device sends a [state](../messages/state.md) message as
 defined by [config and state sequence](../specs/sequences/config.md)
 
 ```json

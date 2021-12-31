@@ -4,7 +4,7 @@
 # State Message
 
 **Schema Definition:** [state.json](../../schema/state.json)
- ([_View interactive_](../../gencode/docs/state.html))
+ ([🧬 _View_](../../gencode/docs/state.html))
 
 * There is an implicit minimum update interval of _one second_ applied to state updates, and it
 is considered an error to update device state more often than that. If there are multiple
