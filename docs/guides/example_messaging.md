@@ -70,7 +70,7 @@ Metadata file saved as a `FCU-001/metadata.json` within the [site model](../spec
     },
     "physical_tag": {
       "asset": {
-        "guid": "bim://04aEp5ymD_$u5IxhJN2aGi", #test 
+        "guid": "bim://04aEp5ymD_$u5IxhJN2aGi", #test  dsa sad dsa das 
         "site": "US-SFO-XYY",
         "name": "FCU-001"
       }
