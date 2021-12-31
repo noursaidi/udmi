@@ -15,9 +15,9 @@ intended function of the device.
 
 ## Compliance Matrix
 
-The [compliance matrix](compliance_matrix.pdf) provides an overview of many of the functionality defined within UDMI broken
-down into smaller individual feature sets. This aids in assessing levels or completeness of
-compliance of a device and can be used for defining requirements.
+The [compliance matrix](compliance_matrix.pdf) provides an overview of many of the functionality
+defined within UDMI broken down into smaller individual feature sets. This aids in assessing levels
+or completeness of compliance of a device and can be used for defining requirements.
 
 [![Compliance Matrix](images/thumbnail_compliance_matrix.png)](compliance_matrix.pdf)
 
