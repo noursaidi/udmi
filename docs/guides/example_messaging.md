@@ -37,7 +37,7 @@ For this example, the sample fan coil unit system comprises
 
 UDMI is implemented at the fan coil unit controller, which has an internet connection, and a UDMI  MQTT client
 
-The approach here is consistent with the [Digital Buildings Ontology (DBO)](../tech_primer.md).
+The approach here is consistent with the [🧬 Digital Buildings Ontology (DBO)](../tech_primer.md).
 Conversely it is also possible and valid to represent each component as a [logical device](../tech_primer.md#) subject to
 project requirements
 
