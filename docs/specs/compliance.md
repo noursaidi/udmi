@@ -13,6 +13,8 @@ intended function of the device.
 * [_gateway_ proxy](gateway.md), used to proxy data for non-MQTT devices.
 * [_system_ basics](../messages/system.md), used for general monitoring and logging.
 
+The [Tech Primer](../tech_primer.md) gives a primer for smart-ready building assembly requirements
+
 ## Compliance Matrix
 
 The [compliance matrix](compliance_matrix.pdf) provides an overview of many of the functionality
@@ -23,6 +25,11 @@ or completeness of compliance of a device and can be used for defining requireme
 
 ## Testing
 
-Valdators (validator, sequencor)
+The [validator](../tools/validator.md) and [sequencer](../tools/sequencer.md) tools can be used to
+validate conformance to the schema.
 
-DAQ - automated to run all of these (link to cloud test)
+The [registar](../tools/registrar.md#tool-execution) tool can be used to validate
+[metadata](metadata.md) and [site models](site_model.md).
+
+[DAQ](https://github.com/faucetsdn/daq) can be used to run some automated [UDMI
+tests](https://github.com/faucetsdn/daq/blob/master/docs/cloud_tests.md) on devices

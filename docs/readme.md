@@ -2,7 +2,12 @@
 
 # UDMI specification and tools
 
-[**UDMI specification**](specs/)
+* [**Specification**](specs/)
+* [**Messages**](messages/)
+* [**Guides**](guides/)
+* [**Cloud**](cloud/)
+* [**Tools**](tools/)
+* [**Schema**](../schema) ([🧬 _Interactive viewer_](../gencode/docs/))
 
 UDMI definition
 * [Technology stack](./specs/tech_stack.md)
