@@ -52,8 +52,9 @@ The system additionally comprises the following virtual points
 
 These points have been named according to [DBO](../tech_primer.md) at the controller.
 
-This is an example, in practice the system may comprise additional components and points
-not shown in the example. These would be incorporated in the same way. There are different ways and connectivity options to achiee the same functionality e.g. using [gateways](../specs/gateway.md)
+This is an example, in practice the system may comprise additional components and points not shown
+in the example. These would be incorporated in the same way. There are different ways and
+connectivity options toa achieve the same functionality e.g. using [gateways](../specs/gateway.md)
 
 ## Site Model & Metadata
 
@@ -254,9 +255,12 @@ The temperature setpoint `zone_air_temperature_setpoint` is updated from the clo
 
 #### (5) State
 
-A [state](../messages/state.md) message is sent back with the If the [writeback](../specs/sequences/writeback.md) was successfully applied, the [`value_state`](../specs/sequences/writeback.md#value-state-and-state) is set to applied.
+A [state](../messages/state.md) message is sent back with the If the
+[writeback](../specs/sequences/writeback.md) was successfully applied, the
+[`value_state`](../specs/sequences/writeback.md#value-state-and-state) is set to applied.
 
-The `last_config` matches the value of the last config message recieved as described in the [state and config sequences](../specs/sequences/config.md) 
+The `last_config` matches the value of the last config message received as described in the [state
+and config sequences](../specs/sequences/config.md) 
 
 
 ```json

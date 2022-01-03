@@ -8,7 +8,7 @@
 * The state message should be sent within 5 seconds
   * If additional processing is required, then the `updating` flag should be set `true`.
   * `updating` should be returned to `false` (or absent) once the device is done updating.
-* The device can asynchroniously update `state` if some other condition changes independent of
+* The device can asynchronously update `state` if some other condition changes independent of
   `config` message, including when:
   * There is an update from an external source, e.g. a BMS or local controller
   * There is an update from internal logic 

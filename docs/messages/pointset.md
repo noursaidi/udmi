@@ -163,7 +163,7 @@ block with the following structure:e
   * `points`: Collection of point names, defining the representative point set for this device.
     * _{`point_name`}_: Point name.
       * `units`: Set as-operating units for this point.
-      * (`set_value`): Optional setting to control the specificed device point. See [writeback documentation](../specs/sequences/writeback.md).
+      * (`set_value`): Optional setting to control the specified device point. See [writeback documentation](../specs/sequences/writeback.md).
       * (`cov_threshold`): Optional threshold for triggering a COV telemetry update.
 
 The points defined in the `config.pointset.points` dictionary is the authoritative source

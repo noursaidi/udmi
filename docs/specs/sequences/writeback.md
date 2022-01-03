@@ -27,7 +27,8 @@ To write to a point, the cloud sets three fields in the device config.
 
 ## Device Behavior
 
-After receiving the config message, the device attempts to write the value to the point. Depending on status of the write, the device should populate the `value_state` as described below.
+After receiving the config message, the device attempts to write the value to the point. Depending
+on the status of the write, the device should populate the `value_state` as described below.
 
 ### State and `value_state` 
 

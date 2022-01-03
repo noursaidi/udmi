@@ -21,15 +21,17 @@ and have device-level UDMI data, but they have fundamentally different roles.
 
 ## Gateway Operation
 
-There are two modes for gateway operation: _implicit_ and _explicit_. In the
-_explicit_ mode, the gateway functionality is configured dynamically through
-gateway _config_ messages, which tell it the local devices it should proxy
-for. In a _implicit_ gateway configuration, the gateway will be directly
+There are two modes for gateway operation: _implicit_ and _explicit_. 
+
+In the _explicit_ mode, the gateway functionality is configured dynamically through
+gateway _config_ messages, which tell it the local devices it should proxy for. 
+
+In the _implicit_ gateway configuration, the gateway will be directly
 configured to proxy a set of devices, essentially ignoring any gateway
 information in the associated _config_ block.
 
 The general sequence of events for gateway operation is:
-1. Optional metadata specifies configuration paramaters that should be used
+1. Optional metadata specifies configuration parameters that should be used
 at install time to properly (manually) setup the device.
 2. (_explicit_ only) On startup, the gateway connects to the cloud and receives
 a configuration block that details which _proxy devices_ the gateway should proxy for.
@@ -94,8 +96,8 @@ proxy device status block.
 
 ### telemetry
 
-[Telemety](../messages/event.md) from the gateway would primarily consist of standard messages,
-which provide a running comentary about gateway operation. Specificaly, if there is an error
+[Telemetry](../messages/event.md) from the gateway would primarily consist of standard messages,
+which provide a running commentary about gateway operation. Specifically, if there is an error
 attaching, then there should be appropriate logging to help diagnose the problem.
 
 ### metadata

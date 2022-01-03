@@ -6,7 +6,7 @@
 **Schema Definition:** [config.json](../../schema/config.json)
  ([_🧬 View_](../../gencode/docs/config.html))
 
-The UDMI config block species the
+The UDMI config block specifies the
 [Cloud IoT Core Config](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)
 block that controls a device's intended behavior.
 
