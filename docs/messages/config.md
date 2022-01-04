@@ -4,7 +4,7 @@
 # Config
 
 **Schema Definition:** [config.json](../../schema/config.json)
- ([_🧬 View_](../../gencode/docs/config.html))
+ ([_🧬View_](../../gencode/docs/config.html))
 
 The UDMI config block specifies the
 [Cloud IoT Core Config](https://cloud.google.com/iot/docs/how-tos/config/configuring-devices)

@@ -21,7 +21,7 @@ Pointset is represented in four locations
 ## Metadata
 
 **Schema Definition:** [metadata_pointset.json](../../schema/metadata_pointset.json)
- ([🧬 _View_](../../gencode/docs/metadata.html#pointset))
+ ([_🧬View_](../../gencode/docs/metadata.html#pointset))
 
 Example:
 
@@ -60,7 +60,7 @@ metadata message
 ## Telemetry
 
 **Schema Definition:** [event_pointset.json](../../schema/event_pointset.json)
- ([🧬 _View_](../../gencode/docs/event_pointset.html#points))
+ ([_🧬View_](../../gencode/docs/event_pointset.html#points))
 
 A basic `pointset` telemetry message contains
 the point data sent from a device. The message contains just the top-level `points` designator,
@@ -81,7 +81,7 @@ the representative points.
 
 Incremental updates (e.g. for COV) can send only the specific updated points as an optimization,
 while setting the top-level
-[🧬 `partial_update`](../../gencode/docs/event_pointset.html#partial_update) field to `true` These
+[🧬`partial_update`](../../gencode/docs/event_pointset.html#partial_update) field to `true` These
 messages may be indiscriminately dropped by the backend systems, so a periodic full-update must
 still be sent (as per `sample_rate_sec` below). Sending an update where all expected points are not
 included, without this flag, is considered a validation error.
@@ -112,7 +112,7 @@ included, without this flag, is considered a validation error.
 ## State
 
 **Schema Definition:** [state_pointset.json](../../schema/state_pointset.json)
- ([🧬 _View interactive_](../../gencode/docs/state.html#pointset))
+ ([_🧬View interactive_](../../gencode/docs/state.html#pointset))
 
 The [state](state.md) message from a device contains a `pointset` block with the following
 structure:
@@ -150,7 +150,7 @@ reason for an _invalid_ or _failure_ `value_state`).
 
 ## Config
 
-[🧬 Schema](../../gencode/docs/config.html#pointset)
+[🧬Schema](../../gencode/docs/config.html#pointset)
 
 The [config](config.md) message for a device contains a `pointset`
 block with the following structure:e

@@ -10,7 +10,7 @@
 - [**Cloud**](cloud/)
 - [**Tools**](tools/)
 - [**Schema**](https://github.com/faucetsdn/udmi/tree/master/schema)
-  ([🧬 _Interactive viewer_](../gencode/docs/))
+  ([_🧬Interactive viewer_](../gencode/docs/))
 
 ## About UDMI
 
@@ -43,16 +43,16 @@ manual operation (aren't automated), and increase the security exposure of the s
 (since they need to expose these management ports).
 
 UDMI is intended to support a few primary use-cases:
-- _Telemetry Ingestion_: Ingest device data points in a standardized format.
+- [_Telemetry Ingestion_](messages/pointset.md#telemetry): Ingest device data points in a standardized format.
 - [_Gateway Proxy_](specs/gateway.md): Proxy data/connection for non-UDMI devices,
 allowing adaptation to legacy systems.
-- _On-Prem Actuation_: Ability to effect on-prem device behavior.
+- [_On-Prem Actuation_](specs/sequences/writeback.md): Ability to effect on-prem device behavior.
 - _Device Testability_: e.g. Trigger a fake alarm to test reporting mechanisms.
-- _Commissioning Tools_: Streamline complete system setup and install.
+- [_Commissioning Tools_](tools/): Streamline complete system setup and install.
 - _Operational Diagnostics_: Make it easy for system operators to diagnose basic faults.
-- _Status and Logging_: Report system operational metrics to hosting infrastructure.
+- [_Status and Logging_](messages/status.md): Report system operational metrics to hosting infrastructure.
 - _Key Rotation_: Manage encryption keys and certificates in accordance with best practice.
 - _Credential Exchange_: Bootstrap higher-layer authentication to restricted resources.
 - _Firmware Updates_: Initiate, monitor, and track firmware updates across an entire fleet
 of devices.
-- _On-Prem Discovery_: Enumerate any on-prem devices to aid setup or anomaly detection.
+- [_On-Prem Discovery_](specs/discovery.md): Enumerate any on-prem devices to aid setup or anomaly detection.

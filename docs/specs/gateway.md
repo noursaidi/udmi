@@ -45,7 +45,7 @@ native (e.g. BacNET) communications and UDMI-based messages.
 
 ### config
 
-The [🧬 gateway block](../../gencode/docs/config.html#gateway) in the [config](../messages/config.md)
+The [🧬gateway block](../../gencode/docs/config.html#gateway) in the [config](../messages/config.md)
 
 ```json
 {
@@ -77,7 +77,7 @@ device, should be reported in the [`gateway` _block_](state.html#gateway) of the
 ```
 [_(full example)_](../../tests/state.tests/gateway.json)
 
-A [🧬 _logentry_](../../gencode/docs/event_system.html#logentries)) message should be used to detail
+A [_🧬logentry_](../../gencode/docs/event_system.html#logentries)) message should be used to detail
 the nature of the problem. If the gateway can attach successfully, any other errors, e.g. the
 inability to communicate with the device over the local network, should be indicated as part of the
 proxy device status block.
@@ -102,7 +102,7 @@ attaching, then there should be appropriate logging to help diagnose the problem
 
 ### metadata
 
-The [🧬 `gateway` block](../../gencode/docs/metadata.html#gateway) within the [metadata](metadata.md)
+The [🧬`gateway` block](../../gencode/docs/metadata.html#gateway) within the [metadata](metadata.md)
 specifies any information necessary either for the initial (manual) configuration of the device or
 ongoing validation of operation. E.g., if a gateway device has a unique MAC address used for local
 communications, it would be indicated here.
@@ -125,7 +125,7 @@ cloud connection.
 ### config
 
 Proxy device [_config_](../messages/config.md) contain a special
-[🧬 `localnet` block](../../gencode/docs/config.html#localnet) section that
+[🧬`localnet` block](../../gencode/docs/config.html#localnet) section that
 specifies information required by the gateway to contact the local device.
 E.g., the fact that a device is 'BacNET' and also the device's BacNET object
 ID. Based on this, the gateway can communicate with the target device and proxy
@@ -147,7 +147,7 @@ all other messages.
 
 Additionally, the gateway is responsible for proxying all other supported operations of the config
 bundle. E.g., if a [_pointset_](../messages/pointset.md) has a
-[🧬 `set_value`](../../gencode/docs/config.html#pointset_points_pattern1_set_value) 
+[🧬`set_value`](../../gencode/docs/config.html#pointset_points_pattern1_set_value) 
 
 parameter specified, the gateway would need to convert that into the local protocol
 and trigger the required functionality.
@@ -167,7 +167,7 @@ proxying data from local devices through to UDMI. In many cases, this would be t
 device points into a [_pointset_ message](../../tests/event_pointset.tests/example.json).
 
 ### metadata
-The [🧬 `localnet` block](../../gencode/docs/metadata.html#localnet) within the [metadata](metadata.md)
+The [🧬`localnet` block](../../gencode/docs/metadata.html#localnet) within the [metadata](metadata.md)
 describes the presence of the device on a local network. This can/should be used for initial
 programming and configuration of the device, or to validate proper device configuration. The gateway
 implementation itself would not directly deal with this block.

@@ -11,7 +11,7 @@ Primarily used for things like logging, general status, firmware management, etc
 ## State
 
 **Schema Definition:** [state_system.json](../../schema/state_system.json)
- ([🧬 _View_](../../gencode/docs/state.html#system))
+ ([_🧬View_](../../gencode/docs/state.html#system))
 
 ### Example
 ```json
@@ -39,7 +39,7 @@ Primarily used for things like logging, general status, firmware management, etc
 ## Event
 
 **Schema Definition:** [event_system.json](../../schema/event_system.json)
- ([🧬 _View_](../../gencode/docs/event_system.html))
+ ([_🧬View_](../../gencode/docs/event_system.html))
 
 ### Example
 ```json
@@ -68,7 +68,7 @@ Primarily used for things like logging, general status, firmware management, etc
 ## Metadata
 
 **Schema Definition:** [metadata_system.json](../../schema/metadata_system.json)
- ([🧬 _View_](../../gencode/docs/metadata.html#system))
+ ([_🧬View_](../../gencode/docs/metadata.html#system))
 
 ### Example
 ```JSON
