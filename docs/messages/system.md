@@ -14,7 +14,7 @@ Primarily used for things like logging, general status, firmware management, etc
  ([🧬 _View_](../../gencode/docs/state.html#system))
 
 ### Example
-```json
+```json state
 {
   ...
   "system": {
@@ -34,7 +34,7 @@ Primarily used for things like logging, general status, firmware management, etc
       }
     }
   },
-  ```
+```
 
 ## Event
 
