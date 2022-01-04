@@ -3,8 +3,6 @@
 
 # UDMI example
 
-The `state_etag` of the last _state_ message sent by the device. Read more: <../../docs/specs/sequences/writeback.md>
-
 ## Contents
 
 - [Introduction](#introudction)
@@ -17,29 +15,23 @@ The `state_etag` of the last _state_ message sent by the device. Read more: <../
 
 - [Tech primer](../tech_primer.md)
 - [UDMI documentation ](../)
+- [Compliance](../specs/compliance.md)
 
-This document describes a real world basic implementation of aspects UDMI using a fan coil unit system as an
-example
-
-Only basic message related functionality and not complete functionality.
-
-Project requirements may require additional functionality to what is shown here
+This document describes a real world basic implementation of UDMI using a fan coil unit
+system as an example. Only basic messaging functionality is demonstrated and not complete functionality. 
 
 ## Physical Setup
 
-For this example, the sample fan coil unit system comprises 
+For this example, the sample fan coil unit system comprises:
 - Fan
 - Cooling coil and valve
-- Supply & return air temperature sensor
+- Supply & return air temperature sensorS
 - Fan coil unit controller
 
 ![example-systems-diagram](images/example-systems-diagram.png)
 
-UDMI is implemented at the fan coil unit controller, which has an internet connection, and a UDMI  MQTT client
-
-The approach here is consistent with the [Digital Buildings Ontology (DBO)](../tech_primer.md).
-Conversely it is also possible and valid to represent each component as a [logical device](../tech_primer.md#) subject to
-project requirements
+UDMI is implemented at the fan coil unit controller, which has an internet connection, and an MQTT
+client which supports UDMI.
 
 The system has the following physical points, represented as analogue inputs/outputs on the controller
 - `cooling_valve_percentage_command`
@@ -50,11 +42,13 @@ The system has the following physical points, represented as analogue inputs/out
 The system additionally comprises the following virtual points
 - `zone_air_temperature_setpoint`
 
-These points have been named according to [DBO](../tech_primer.md) at the controller.
+These points have been named according to [Digital Buildings Ontology (DBO)](../tech_primer.md) at
+the controller. Conversely it is also possible and valid to represent each component as a [logical
+device](../tech_primer.md#) subject to project requirements
 
-This is an example, in practice the system may comprise additional components and points not shown
-in the example. These would be incorporated in the same way. There are different ways and
-connectivity options toa achieve the same functionality e.g. using [gateways](../specs/gateway.md)
+In practice the system may comprise additional components and points not shown in this limited
+example, however these can be incorporated in the same way. There are different ways and
+connectivity options to achieve the same functionality e.g. using [gateways](../specs/gateway.md)
 
 ## Site Model & Metadata
 
@@ -114,7 +108,7 @@ descriptive fields. It is suggested these are filled in where available.
 
 #### (1) Initial Configuration
 
-Using the registrar tool, a configuration message is sent based on metadata
+Using the registrar tool, a configuration message is sent to the device based on metadata file
 
 ```json
 {
@@ -182,7 +176,7 @@ defined by [config and state sequence](../specs/sequences/config.md)
 #### (3) Telemetry (Pointset Event)
 
 The telemetry will send data at an interval according to the `sample_limit_sec` and
-`sample_rate_sec` from the [config](config.md) message
+`sample_rate_sec` from the [config](config.md) message.
 
 In this example with the following parameters:
 * `sample_rate_sec`: 15
@@ -214,12 +208,12 @@ The telemetry will be nominally sent every 60 seconds
 ```
 
 [Partial updates and CoV](../messages/pointset.md#incremental-updates-and-cov) can be implemented
-into the telemetry if appropriate as described.
+into the telemetry where appropriate.
 
 ### Writeback
 
-[Writeback](../specs/sequences/writeback.md) is the process cloud to device control by sending
-[config](../messages/config.md) messages
+[Writeback](../specs/sequences/writeback.md) is the process of cloud to device control by sending
+[config](../messages/config.md) messages to the device
 
 #### (4) Config
 
@@ -246,7 +240,7 @@ The temperature setpoint `zone_air_temperature_setpoint` is updated from the clo
       "fan_speed_percentage_command": {
       },
       "zone_air_temperature_setpoint": {
-        "set_value": 18.0 // Update this point to the given 18
+        "set_value": 18.0 // Update this point to 18.0
       }
     }
   }
@@ -255,8 +249,9 @@ The temperature setpoint `zone_air_temperature_setpoint` is updated from the clo
 
 #### (5) State
 
-A [state](../messages/state.md) message is sent back with the If the
-[writeback](../specs/sequences/writeback.md) was successfully applied, the
+A [state](../messages/state.md) message is sent when the [device receives a config message.](../specs/sequences/config.md) 
+
+If the [writeback](../specs/sequences/writeback.md) was successfully applied, the
 [`value_state`](../specs/sequences/writeback.md#value-state-and-state) is set to applied.
 
 The `last_config` matches the value of the last config message received as described in the [state
@@ -296,7 +291,8 @@ and config sequences](../specs/sequences/config.md)
 
 #### (6) Telemetry
 
-The device continues to send the telemetry within the sample interval
+The device continues to send the telemetry within the sample interval. The telemetry reflects the
+values set by the cloud
 
 ```json
 {
