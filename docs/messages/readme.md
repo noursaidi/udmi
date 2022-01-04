@@ -6,7 +6,7 @@
 ## Message Categories
 
 -   [Config](config.md) ([🧬 _schema_](../../gencode/docs/config.html))
--   [State](state.md) [🧬 _schema_](../../gencode/docs/config.html))
+-   [State](state.md) ([🧬 _schema_](../../gencode/docs/config.html))
 -   [Events](event.md) 
     - [Pointset (telemetry)](pointset.md#telemetry) ([🧬 _schema_](../../gencode/docs/event_pointset.html))
     - [System (logging, etc)](system.md) ([🧬 _schema_](../../gencode/docs/event_system.html))

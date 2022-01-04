@@ -16,15 +16,15 @@ join the [udmi-discuss@googlegroups.com](https://groups.google.com/forum/#!forum
 mailing list for questions and discussion.
 
 By design, this schema is intended to be:
-* __U__niversal: Apply to all subsystems in a building, not a singular vertical solution.
-* **D**evice: Operations on an IoT _device_, a managed entity in physical space.
+* <b>U</b>niversal: Apply to all subsystems in a building, not a singular vertical solution.
+* <b>D</b>evice: Operations on an IoT _device_, a managed entity in physical space.
 * <b>M</b>anagement: Focus on device _management_, rather than command & control.
 * <b>I</b>nterface: Define an interface specification, rather than a client-library or
 RPC mechanism.
 
 See the associated [UDMI Tech Stack](docs/specs/tech_stack.md) for details about transport mechanism
 outside of the core schema definition. Nominally meant for use with
-[Googe's Cloud IoT Core](https://cloud.google.com/iot/docs/), it can be applied to any set
+[Google's Cloud IoT Core](https://cloud.google.com/iot/docs/), it can be applied to any set
 of data or hosting setup.
 
 ## Recommended Workflow
@@ -43,7 +43,7 @@ manual operation (aren't automated), and increase the security exposure of the s
 
 UDMI is intended to support a few primary use-cases:
 * _Telemetry Ingestion_: Ingest device data points in a standardized format.
-* [_Gateway Proxy_](docs/gateway.md): Proxy data/connection for non-UDMI devices,
+* [_Gateway Proxy_](docs/specs/gateway.md): Proxy data/connection for non-UDMI devices,
 allowing adaptation to legacy systems.
 * _On-Prem Actuation_: Ability to effect on-prem device behavior.
 * _Device Testability_: e.g. Trigger a fake alarm to test reporting mechanisms.

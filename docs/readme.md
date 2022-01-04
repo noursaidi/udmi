@@ -44,7 +44,7 @@ manual operation (aren't automated), and increase the security exposure of the s
 
 UDMI is intended to support a few primary use-cases:
 - _Telemetry Ingestion_: Ingest device data points in a standardized format.
-- [_Gateway Proxy_](docs/gateway.md): Proxy data/connection for non-UDMI devices,
+- [_Gateway Proxy_](specs/gateway.md): Proxy data/connection for non-UDMI devices,
 allowing adaptation to legacy systems.
 - _On-Prem Actuation_: Ability to effect on-prem device behavior.
 - _Device Testability_: e.g. Trigger a fake alarm to test reporting mechanisms.
