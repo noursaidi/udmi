@@ -44,7 +44,7 @@ The system additionally comprises the following virtual points
 
 These points have been named according to [Digital Buildings Ontology (DBO)](../tech_primer.md) at
 the controller. Conversely it is also possible and valid to represent each component as a [logical
-device](../tech_primer.md#) subject to project requirements
+device](../tech_primer.md) subject to project requirements
 
 In practice the system may comprise additional components and points not shown in this limited
 example, however these can be incorporated in the same way. There are different ways and

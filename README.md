@@ -3,7 +3,7 @@
 **Documentation** - [docs/](docs/)
 
 **Schema** - [schema/](https://github.com/faucetsdn/udmi/tree/master/schema)
- ([🧬 _Interactive viewer_](gencode/docs/))
+ ([_🧬Interactive viewer_](gencode/docs/))
 
 **Mailing list & discussion** - [udmi-discuss@googlegroups.com](https://groups.google.com/forum/#!forum/udmi-discuss)
 
