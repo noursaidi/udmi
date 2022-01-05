@@ -7,7 +7,6 @@
  */
 function removedHostedMDExtensions(){
     const docsRegex = '^(https.*).md(#.*)?$';
-    console.log("triggered remove")
     if (window.location.href.match("https://")) {
         links = document.getElementsByTagName("a");
         for (var link of links){
@@ -15,7 +14,6 @@ function removedHostedMDExtensions(){
             if(match) {
                 var anchor = (match[2] === undefined ? '' : match[2]);
                 link.href = `${match[1]}${anchor}`
-                console.log('url updated');
             }
         }
     }
