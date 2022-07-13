@@ -10,20 +10,20 @@ implicit expected `level` values, indicated by '(**LEVEL**)' in the hierarchy be
 
 * _system_: Basic system operation
   * _base_: Baseline system operational messages
-    * _start_ (**NOTICE**): System is in the process of (re)starting and essentially offline
-    * _shutdown_ (**NOTICE**): System is shutting down
-    * _ready_: (**NOTICE**): System is fully ready for operation
+    * _start_ (**INFO**): System is in the process of (re)starting and essentially offline
+    * _shutdown_ (**INFO**): System is shutting down
+    * _ready_: (**INFO**): System is fully ready for operation
     * _comms_: Baseline message handling
   * _config_: Configuration message handling
-    * _receive_: (**DEBUG**) Receiving a config message
+    * _receive_: (**NOTICE**) Receiving a config message
     * _parse_: (**DEBUG**) Parsing a received message
-    * _apply_: (**NOTICE**) Application of a parsed config message
+    * _apply_: (**INFO**) Application of a parsed config message
   * _network_: Network (IP) message handling
-    * _connect_: (**NOTICE**) Connected to the network
-    * _disconnect_: (**NOTICE**) Disconnected from a network
+    * _connect_: (**INFO**) Connected to the network
+    * _disconnect_: (**INFO**) Disconnected from a network
   * _auth_: Authentication to local application (e.g. web server, SSH)
-    * _login_: (**NOTICE**) Successful login. The entry message should include the username and application
-    * _logout_: (**NOTICE**) Successful logout 
+    * _login_: (**INFO**) Successful login. The entry message should include the username and application
+    * _logout_: (**INFO**) Successful logout 
     * _fail_: (**WARNING**) Failed authentication attempt. The entry message should include the application
 * _pointset_: Handling managing data point conditions
   * _point_: Conditions relating to a specific point, the entry `message` field should
