@@ -57,7 +57,7 @@ public class ConfigDiffEngine {
 
   private Object convertSemantics(Object thing, Field field) {
     try {
-      if (isBaseType(field)) {
+      if (isBaseType(field) || isBaseType(field.get(thing))) {
         System.err.println("Converting base type " + field);
         return field.get(thing);
       } else {
