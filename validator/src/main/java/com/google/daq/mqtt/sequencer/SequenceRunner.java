@@ -117,6 +117,7 @@ public abstract class SequenceRunner {
   private static final String SYSTEM_LOG = "system.log";
   private static final String SEQUENCE_MD = "sequence.md";
   private static Date stateTimestamp;
+  protected static boolean breakMark = false;
 
   // Because of the way tests are run and configured, these parameters need to be
   // a singleton to avoid runtime conflicts.

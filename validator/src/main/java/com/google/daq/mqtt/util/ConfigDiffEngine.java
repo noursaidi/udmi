@@ -40,18 +40,28 @@ public class ConfigDiffEngine {
     return configUpdates;
   }
 
+  @SuppressWarnings("unchecked")
   private Map<String, Object> convertSemantics(Object thing) {
-    return thing == null ? ImmutableMap.of() :
-        Arrays.stream(thing.getClass().getFields())
-            .filter(field -> isNotNull(thing, field)).collect(
-                Collectors.toMap(Field::getName, field -> convertSemantics(thing, field)));
+    if (thing == null) {
+      return ImmutableMap.of();
+    }
+    if (thing instanceof Map) {
+      Map<String, Object> asMap = (Map<String, Object>) thing;
+      System.err.println("Converting map size " + asMap.size());
+      return asMap.keySet().stream().collect(Collectors.toMap(key -> key, key -> convertSemantics(asMap.get(key))));
+    }
+    return Arrays.stream(thing.getClass().getFields())
+        .filter(field -> isNotNull(thing, field)).collect(
+            Collectors.toMap(Field::getName, field -> convertSemantics(thing, field)));
   }
 
   private Object convertSemantics(Object thing, Field field) {
     try {
       if (isBaseType(field)) {
+        System.err.println("Converting base type " + field);
         return field.get(thing);
       } else {
+        System.err.println("Converting object type " + field);
         return convertSemantics(field.get(thing));
       }
     } catch (Exception e) {
@@ -69,7 +79,9 @@ public class ConfigDiffEngine {
 
   private boolean isBaseType(Object value) {
     Class<?> type = value instanceof Field ? ((Field) value).getType() : value.getClass();
-    return Integer.class.isAssignableFrom(type)
+    return type.isPrimitive()
+        || Boolean.class.isAssignableFrom(type)
+        || Integer.class.isAssignableFrom(type)
         || String.class.isAssignableFrom(type)
         || Date.class.isAssignableFrom(type);
   }
