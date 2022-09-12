@@ -1,7 +1,5 @@
 package com.google.daq.mqtt.util;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.daq.mqtt.sequencer.semantic.SemanticValue;
@@ -25,8 +23,7 @@ public class ConfigDiffEngine {
   }
 
   /**
-   * Compute the changes in a config object from the previous config, as
-   * stored in the class.
+   * Compute the changes in a config object from the previous config, as stored in the class.
    *
    * @param deviceConfig new config
    * @return list of differences against the previous config
@@ -47,8 +44,8 @@ public class ConfigDiffEngine {
     }
     if (thing instanceof Map) {
       Map<String, Object> asMap = (Map<String, Object>) thing;
-      System.err.println("Converting map size " + asMap.size());
-      return asMap.keySet().stream().collect(Collectors.toMap(key -> key, key -> convertSemantics(asMap.get(key))));
+      return asMap.keySet().stream()
+          .collect(Collectors.toMap(key -> key, key -> convertSemantics(asMap.get(key))));
     }
     return Arrays.stream(thing.getClass().getFields())
         .filter(field -> isNotNull(thing, field)).collect(
@@ -58,10 +55,8 @@ public class ConfigDiffEngine {
   private Object convertSemantics(Object thing, Field field) {
     try {
       if (isBaseType(field) || isBaseType(field.get(thing))) {
-        System.err.println("Converting base type " + field);
         return field.get(thing);
       } else {
-        System.err.println("Converting object type " + field);
         return convertSemantics(field.get(thing));
       }
     } catch (Exception e) {
