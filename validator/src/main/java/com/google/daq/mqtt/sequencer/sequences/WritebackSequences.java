@@ -4,8 +4,11 @@ import com.google.daq.mqtt.sequencer.PointSequencer;
 import com.google.daq.mqtt.util.JsonUtil;
 import java.util.Objects;
 import org.junit.Test;
+import java.util.List;
 import udmi.schema.PointPointsetState.Value_state;
 import udmi.schema.TargetTestingModel;
+import udmi.schema.PointsetEvent;
+import udmi.schema.PointPointsetEvent;
 
 /**
  * Validate UDMI writeback capabilities.
@@ -21,7 +24,7 @@ public class WritebackSequences extends PointSequencer {
     if (deviceState.pointset == null || !deviceState.pointset.points.containsKey(pointName)) {
       return false;
     }
-    Value_state rawState = deviceState.pointset.points.get(pointName).value_state;
+    Value_state rawState = deviceState.pointset. .get(pointName).value_state;
     String valueState = rawState == null ? null : rawState.value();
     boolean equals = Objects.equals(expected, valueState);
     System.err.printf("%s Value state %s equals %s = %s%n",
@@ -35,36 +38,17 @@ public class WritebackSequences extends PointSequencer {
   }
 
   @Test
-  public void writeback_states() {
-    TargetTestingModel invalidTarget = getTarget(INVALID_STATE);
-    TargetTestingModel failureTarget = getTarget(FAILURE_STATE);
+  public void writeback_success() {
+
     TargetTestingModel appliedTarget = getTarget(APPLIED_STATE);
 
-    String invalidPoint = invalidTarget.target_point;
-    String failurePoint = failureTarget.target_point;
-    String appliedPoint = appliedTarget.target_point;
-    untilTrue(expectedValueState(invalidPoint, DEFAULT_STATE),
-        () -> valueStateIs(invalidPoint, DEFAULT_STATE)
-    );
-    untilTrue(expectedValueState(failurePoint, DEFAULT_STATE),
-        () -> valueStateIs(failurePoint, DEFAULT_STATE)
-    );
-    untilTrue(expectedValueState(appliedPoint, DEFAULT_STATE),
-        () -> valueStateIs(appliedPoint, DEFAULT_STATE)
-    );
-    deviceConfig.pointset.points.get(invalidPoint).set_value = invalidTarget.target_value;
-    deviceConfig.pointset.points.get(failurePoint).set_value = failureTarget.target_value;
-    deviceConfig.pointset.points.get(appliedPoint).set_value = appliedTarget.target_value;
-    updateConfig();
 
-    untilTrue(expectedValueState(invalidPoint, INVALID_STATE),
-        () -> valueStateIs(invalidPoint, INVALID_STATE)
-    );
-    untilTrue(expectedValueState(failurePoint, FAILURE_STATE),
-        () -> valueStateIs(failurePoint, FAILURE_STATE)
-    );
-    untilTrue(expectedValueState(appliedPoint, APPLIED_STATE),
-        () -> valueStateIs(appliedPoint, APPLIED_STATE)
-    );
+    String appliedPoint = appliedTarget.target_point;
+    deviceConfig.pointset.points.get(appliedPoint).set_value = appliedTarget.target_value;
+    pointValueNow(appliedPoint, appliedTarget.target_value);
+
+
+
+
   }
 }
