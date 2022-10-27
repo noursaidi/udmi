@@ -1,4 +1,5 @@
 {
+  "$udmi_version": "5.6.7",
   "title": "Pubber Options",
   "description": "Pubber runtime options",
   "additionalProperties": true,

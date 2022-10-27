@@ -1,4 +1,5 @@
 {
+  "$udmi_version": "5.6.7",
   "title": "Device Validation Event",
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",

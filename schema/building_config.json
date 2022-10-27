@@ -1,4 +1,5 @@
 {
+  "$udmi_version": "5.6.7",
   "title": "Building Config",
   "description": "[Discovery result](../docs/specs/discovery.md) with implicit enumeration",
   "type": "object",
