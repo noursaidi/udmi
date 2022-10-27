@@ -1,5 +1,5 @@
 {
-  "$udmi_version": "1.4.0",
+  "$udmi_version": "5.6.7",
   "title": "Testing Model",
   "description": "Testing target parameters",
   "type": "object",
