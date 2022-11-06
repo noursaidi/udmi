@@ -1,0 +1,41 @@
+#!/bin/bash -e
+
+PROJECT_ID=daq1-273309
+SITE_PATH=sites/udmi_site_model
+DEVICE_ID=AHU-1
+
+RESULTS_OUT=seq.log
+PUBBER_OUT=pubber.log
+SEQUENCER_OUT=sequencer.log
+
+TEST_LIST=tests.txt
+
+cat > $TEST_LIST <<EOF
+writeback_success
+writeback_success noHardware
+EOF
+
+rm -f $RESULTS_OUT
+
+cat $TEST_LIST | while read test_name pubber_opts; do
+    echo "testing $test_name with pubber opts $pubber_opts" | tee -a $RESULTS_OUT
+
+    serial_no=sequencer-$RANDOM
+    bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
+    tail -f $PUBBER_OUT | tee /dev/tty | grep -m 1 "Connection complete"
+
+    bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $test_name > $SEQUENCER_OUT 2>&1 & 
+    tail -f $SEQUENCER_OUT | tee /dev/tty | grep -E -m 1 "RESULT [a-z]+ writeback_success" 
+
+    kill $(ps ax | fgrep sequencer | fgrep java | awk '{print $1}')
+    kill $(ps ax | fgrep pubber | fgrep java | awk '{print $1}')
+
+    fgrep -E -m 1 "RESULT [a-z]+ writeback_success" $SEQUENCER_OUT \
+        | sed -e 's/.*sequencer RESULT/RESULT/' \
+        >> $RESULTS_OUT
+    sleep 2
+done
+
+cat $RESULTS_OUT
+
+#fgrep -m 1 -E  "RESULT [a-z]+ writeback_success" sequencer.log | sed -e 's/.*sequencer RESULT/RESULT/'

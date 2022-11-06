@@ -738,26 +738,6 @@ public abstract class SequenceBase {
     return receivedEvents.remove(SubFolder.SYSTEM);
   }
 
-  protected void pointValueNow(String pointName, Object desiredValue) {
-    untilTrue(String.format("point value `%s` now `%s`", pointName, desiredValue), () -> {
-      List<Map<String, Object>> messages = receivedEvents.get(SubFolder.POINTSET);
-      if (messages == null) {
-        return false;
-      }
-      for (Map<String, Object> message : messages) {
-        PointsetEvent pointsetEvent = JsonUtil.convertTo(PointsetEvent.class, message);
-        if (pointsetEvent.points.get(pointName) == null) {
-          return false;
-        }
-        info("Value " + pointsetEvent.points.get(pointName).present_value);
-        if (pointsetEvent.points.get(pointName).present_value == desiredValue){
-          return true;
-        }
-      }
-      return false;
-    });
-  }
-
   protected void hasLogged(String category, Level level) {
     untilTrue(String.format("log category `%s` level `%s`", category, level), () -> {
       List<Map<String, Object>> messages = receivedEvents.get(SubFolder.SYSTEM);
