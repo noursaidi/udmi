@@ -12,10 +12,13 @@ TEST_LIST=tests.txt
 
 cat > $TEST_LIST <<EOF
 writeback_success
-writeback_success noHardware
+writeback_success noPointState
+writeback_success noWriteback
 EOF
 
 rm -f $RESULTS_OUT
+touch $SEQUENCER_OUT
+touch $PUBBER_OUT 
 
 cat $TEST_LIST | while read test_name pubber_opts; do
     echo "testing $test_name with pubber opts $pubber_opts" | tee -a $RESULTS_OUT
