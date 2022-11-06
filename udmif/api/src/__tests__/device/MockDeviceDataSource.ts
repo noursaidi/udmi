@@ -1,5 +1,5 @@
 import { GraphQLDataSource } from 'apollo-datasource-graphql/dist/GraphQLDataSource';
-import { SearchOptions } from '../../common/model';
+import { DeviceError } from '../../common/model';
 import { Device, DevicesResponse, Point } from '../../device/model';
 import { createDevices } from './data';
 
@@ -12,16 +12,16 @@ export default class MockDeviceDataSource extends GraphQLDataSource<object> {
     super.initialize(config);
   }
 
-  async getDevices(searchOptions: SearchOptions): Promise<DevicesResponse> {
+  async getDevices(): Promise<DevicesResponse> {
     const devices: Device[] = createDevices(30);
     return { devices, totalCount: 30, totalFilteredCount: 10 };
   }
 
-  async getDevice(id: string): Promise<Device> {
+  async getDevice(): Promise<Device> {
     return createDevices(1)[0];
   }
 
-  async getPoints(deviceId: string): Promise<Point[]> {
+  async getPoints(): Promise<Point[]> {
     return createDevices(1)[0].points;
   }
 
@@ -47,5 +47,22 @@ export default class MockDeviceDataSource extends GraphQLDataSource<object> {
     return createDevices(10)
       .map((d) => d.section)
       .sort();
+  }
+
+  async getDevicesBySite(siteName: string): Promise<DevicesResponse> {
+    const response = await this.getDevices();
+
+    return {
+      ...response,
+      devices: response.devices.filter((d) => d.site === siteName),
+    };
+  }
+
+  async getDeviceErrorsBySite(siteName: string): Promise<DeviceError[]> {
+    const { devices } = await this.getDevicesBySite(siteName);
+
+    return devices.reduce((errors: DeviceError[], device: Device) => {
+      return errors.concat(device.validation?.errors ?? []);
+    }, []);
   }
 }

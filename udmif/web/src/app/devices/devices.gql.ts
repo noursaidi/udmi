@@ -1,7 +1,7 @@
 import { gql } from 'apollo-angular';
 
 export const GET_DEVICES = gql`
-  query GetDevices($searchOptions: SearchOptions!) {
+  query GetDevices($searchOptions: SearchOptions) {
     devices(searchOptions: $searchOptions) {
       devices {
         id
@@ -12,9 +12,13 @@ export const GET_DEVICES = gql`
         section
         lastPayload
         operational
-        firmware
-        serialNumber
-        tags
+        level
+        message
+        details
+        lastSeen
+        state
+        errorsCount
+        validation
       }
       totalCount
       totalFilteredCount

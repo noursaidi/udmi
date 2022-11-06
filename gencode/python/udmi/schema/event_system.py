@@ -1,7 +1,7 @@
 """Generated class for event_system.json"""
 
 
-class ObjectB317E398:
+class ObjectD1FC597A:
   """Generated schema class"""
 
   def __init__(self):
@@ -17,7 +17,7 @@ class ObjectB317E398:
   def from_dict(source):
     if not source:
       return None
-    result = ObjectB317E398()
+    result = ObjectD1FC597A()
     result.restart_count = source.get('restart_count')
     result.mem_total_mb = source.get('mem_total_mb')
     result.mem_free_mb = source.get('mem_free_mb')
@@ -33,7 +33,7 @@ class ObjectB317E398:
       return None
     result = {}
     for key in source:
-      result[key] = ObjectB317E398.from_dict(source[key])
+      result[key] = ObjectD1FC597A.from_dict(source[key])
     return result
 
   @staticmethod
@@ -68,6 +68,7 @@ class SystemEvent:
   def __init__(self):
     self.timestamp = None
     self.version = None
+    self.last_config = None
     self.logentries = None
     self.metrics = None
 
@@ -78,8 +79,9 @@ class SystemEvent:
     result = SystemEvent()
     result.timestamp = source.get('timestamp')
     result.version = source.get('version')
+    result.last_config = source.get('last_config')
     result.logentries = Entry.array_from(source.get('logentries'))
-    result.metrics = ObjectB317E398.from_dict(source.get('metrics'))
+    result.metrics = ObjectD1FC597A.from_dict(source.get('metrics'))
     return result
 
   @staticmethod
@@ -104,6 +106,8 @@ class SystemEvent:
       result['timestamp'] = self.timestamp # 5
     if self.version:
       result['version'] = self.version # 5
+    if self.last_config:
+      result['last_config'] = self.last_config # 5
     if self.logentries:
       result['logentries'] = self.logentries.to_dict() # 3
     if self.metrics:

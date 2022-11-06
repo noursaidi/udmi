@@ -3,7 +3,7 @@
 .mat-toolbar.mat-primary {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 
   nav {
     padding-left: $gutter-width;
@@ -26,12 +26,6 @@
 
 .drop-down-icon {
   margin-right: -10px;
-}
-
-.title {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
 }
 
 .active {

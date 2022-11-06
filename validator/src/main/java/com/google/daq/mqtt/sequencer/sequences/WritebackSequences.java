@@ -1,7 +1,6 @@
 package com.google.daq.mqtt.sequencer.sequences;
-
 import com.google.daq.mqtt.sequencer.PointSequencer;
-import com.google.daq.mqtt.util.JsonUtil;
+import com.google.udmi.util.JsonUtil;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.Test;

@@ -1,17 +1,34 @@
-<app-breadcrumb></app-breadcrumb>
+<app-validation-status [validation]="device?.validation"></app-validation-status>
+
 <mat-card class="summary">
   <div class="item" *ngFor="let field of fields">
-    <span class="mat-body-2">{{ field | capitalize }}</span>
-    <p *ngIf="field === 'lastPayload'; else elseBlock">{{ device?.[field] | date : 'MM/dd/yy h:mm a' }}</p>
-    <ng-template #elseBlock
-      ><p>{{ device?.[field] }}</p></ng-template
-    >
+    <span class="mat-body-2">{{ field.label }}</span>
+    <ng-container [ngSwitch]="field.value">
+      <ng-container *ngSwitchCase="'lastPayload'">
+        <p>{{ device?.lastPayload | date: 'MM/dd/yy h:mm a' }}</p>
+      </ng-container>
+      <ng-container *ngSwitchCase="'lastSeen'">
+        <p>{{ device?.lastSeen | date: 'MM/dd/yy h:mm a' }}</p>
+      </ng-container>
+      <ng-container *ngSwitchCase="'operational'">
+        <p>
+          <ng-container *ngIf="device?.operational === true">Yes</ng-container>
+          <ng-container *ngIf="device?.operational === false">No</ng-container>
+        </p>
+      </ng-container>
+      <ng-container *ngSwitchDefault>
+        <p>{{ device?.[field.value] }}</p>
+      </ng-container>
+    </ng-container>
   </div>
 </mat-card>
 
 <nav mat-tab-nav-bar [tabPanel]="tabPanel">
-  <a mat-tab-link routerLink="points" routerLinkActive="active" #rla="routerLinkActive" [active]="rla.isActive"
+  <a mat-tab-link routerLink="points" routerLinkActive="active" #points="routerLinkActive" [active]="points.isActive"
     >Points</a
+  >
+  <a mat-tab-link routerLink="errors" routerLinkActive="active" #errors="routerLinkActive" [active]="errors.isActive"
+    >Errors</a
   >
 </nav>
 <mat-tab-nav-panel #tabPanel>

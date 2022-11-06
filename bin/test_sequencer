@@ -32,6 +32,8 @@ if [[ -n $pids ]]; then
     kill $pids
 fi
 
+bin/clone_model # Clone, and check that version is correct.
+
 bin/reset_config $site_path $project_id $device_id
 
 pubber/bin/build
@@ -55,7 +57,7 @@ if [[ $i -eq $WAITING ]]; then
     false
 fi
 
-bin/sequencer -v $site_path $project_id $device_id $serial_no
+bin/sequencer $SEQUENCER_OPTS $site_path $project_id $device_id $serial_no
 echo Completed execution of sequencer test run.
 
 sed -i -e 's/.*sequencer RESULT/RESULT/' /tmp/sequencer.out

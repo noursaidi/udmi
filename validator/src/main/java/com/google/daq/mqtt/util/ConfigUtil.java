@@ -8,10 +8,10 @@ import com.google.api.services.cloudiot.v1.CloudIotScopes;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
+import udmi.schema.ExecutionConfiguration;
 
 /**
  * Collection of utilities for managing configuration.
@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public abstract class ConfigUtil {
 
   public static final String EXCEPTIONS_JSON = "exceptions.json";
-  public static final String UDMI_VERSION = "1.3.14";
+  public static final String UDMI_VERSION = "1.4.0";
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -31,9 +31,9 @@ public abstract class ConfigUtil {
    * @param configFile file ot parse
    * @return cloud configuration information
    */
-  public static CloudIotConfig readCloudIotConfig(File configFile) {
+  public static ExecutionConfiguration readExecutionConfiguration(File configFile) {
     try {
-      return OBJECT_MAPPER.readValue(configFile, CloudIotConfig.class);
+      return OBJECT_MAPPER.readValue(configFile, ExecutionConfiguration.class);
     } catch (Exception e) {
       throw new RuntimeException("While reading config file " + configFile.getAbsolutePath(), e);
     }
@@ -72,9 +72,9 @@ public abstract class ConfigUtil {
    * @param configFile file to read
    * @return parsed validator config
    */
-  public static ValidatorConfig readValidatorConfig(File configFile) {
+  public static ExecutionConfiguration readValidatorConfig(File configFile) {
     try {
-      return OBJECT_MAPPER.readValue(configFile, ValidatorConfig.class);
+      return OBJECT_MAPPER.readValue(configFile, ExecutionConfiguration.class);
     } catch (Exception e) {
       throw new RuntimeException("While reading config file " + configFile.getAbsolutePath(), e);
     }

@@ -2,7 +2,13 @@ import { GraphQLDataSource } from 'apollo-datasource-graphql/dist/GraphQLDataSou
 import { Device, DevicesResponse, Point } from './model';
 import { validateSearchOptions, validateDistinctSearchOptions } from '../common/SearchOptionsValidator';
 import { DAO } from '../dao/DAO';
-import { ValidatedDistinctSearchOptions, DistinctSearchOptions, ValidatedSearchOptions } from '../common/model';
+import {
+  ValidatedDistinctSearchOptions,
+  DistinctSearchOptions,
+  ValidatedSearchOptions,
+  SearchOptions,
+  DeviceError,
+} from '../common/model';
 
 export class DeviceDataSource extends GraphQLDataSource {
   constructor(private deviceDAO: DAO<Device>) {
@@ -13,7 +19,7 @@ export class DeviceDataSource extends GraphQLDataSource {
     super.initialize(config);
   }
 
-  async getDevices(searchOptions: ValidatedSearchOptions): Promise<DevicesResponse> {
+  async getDevices(searchOptions?: SearchOptions): Promise<DevicesResponse> {
     const validatedSearchOptions: ValidatedSearchOptions = validateSearchOptions(searchOptions);
 
     const devices: Device[] = await this.deviceDAO.getAll(validatedSearchOptions);
@@ -49,5 +55,26 @@ export class DeviceDataSource extends GraphQLDataSource {
   async getSections(searchOptions?: DistinctSearchOptions): Promise<string[]> {
     const validatedSearchOptions: ValidatedDistinctSearchOptions = validateDistinctSearchOptions(searchOptions);
     return this.deviceDAO.getDistinct('section', validatedSearchOptions);
+  }
+
+  async getDevicesBySite(siteName: string): Promise<DevicesResponse> {
+    return this.getDevices({
+      offset: 0,
+      filter: JSON.stringify([
+        {
+          field: 'site',
+          operator: '=',
+          value: siteName,
+        },
+      ]),
+    });
+  }
+
+  async getDeviceErrorsBySite(siteName: string): Promise<DeviceError[]> {
+    const { devices } = await this.getDevicesBySite(siteName);
+
+    return devices.reduce((errors: DeviceError[], device: Device) => {
+      return errors.concat(device.validation?.errors ?? []);
+    }, []);
   }
 }

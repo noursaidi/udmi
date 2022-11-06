@@ -29,8 +29,16 @@ describe('SitesService', () => {
       sites: {
         sites: [
           {
-            id: '123',
             name: 'site one',
+            totalDevicesCount: 0,
+            correctDevicesCount: 0,
+            missingDevicesCount: 0,
+            errorDevicesCount: 0,
+            extraDevicesCount: 0,
+            lastValidated: '2022-04-24T02:54:51Z',
+            percentValidated: 0,
+            deviceErrors: [],
+            totalDeviceErrorsCount: 0,
           },
         ],
         totalCount: 1,
@@ -52,7 +60,7 @@ describe('SitesService', () => {
     expect(op.operation.variables).toEqual({
       searchOptions: {
         offset: undefined,
-        batchSize: 10,
+        batchSize: undefined,
         sortOptions: undefined,
         filter: undefined,
       },

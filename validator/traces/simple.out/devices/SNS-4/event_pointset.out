@@ -1,6 +1,6 @@
 {
   "timestamp" : "1999-10-20T01:02:03Z",
-  "version" : "1.3.14",
+  "version" : "1.4.0",
   "sub_folder" : "pointset",
   "sub_type" : "event",
   "status" : {
@@ -12,5 +12,11 @@
   "pointset" : {
     "missing" : [ ],
     "extra" : [ "rocket_count" ]
-  }
+  },
+  "errors" : [ {
+    "message" : "Device has extra points: rocket_count",
+    "category" : "validation.error.simple",
+    "timestamp" : "1999-10-20T01:02:03Z",
+    "level" : 500
+  } ]
 }

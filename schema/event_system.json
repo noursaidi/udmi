@@ -1,4 +1,5 @@
 {
+  "$udmi_version": "1.4.0",
   "title": "System Event",
   "description": "Used for system events such as logging. [System Event Documentation](../docs/messages/system.md#event)",
   "$section": "Messages",
@@ -16,6 +17,12 @@
       "description": "Version of the UDMI schema",
       "type": "string"
     },
+    "last_config": {
+      "description": "Last config received",
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2019-01-17T14:02:29.364Z"]
+    },
     "logentries": {
       "type": "array",
       "items": {
@@ -27,7 +34,7 @@
       "additionalProperties": false,
       "properties": {
         "restart_count": {
-          "type": "number"
+          "type": "integer"
         },
         "mem_total_mb": {
           "type": "number"
