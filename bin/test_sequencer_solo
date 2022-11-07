@@ -1,26 +1,24 @@
 #!/bin/bash -e
 
-PROJECT_ID=daq1-273309
+PROJECT_ID=$1
+shift 1
+
 SITE_PATH=sites/udmi_site_model
 DEVICE_ID=AHU-1
 
-RESULTS_OUT=/tmp/test_sequencer_solo.out
+RESULTS_OUT=/tmp/sequencer_solo.out
 PUBBER_OUT=/tmp/pubber.log
 SEQUENCER_OUT=/tmp/sequencer.log
-
-TEST_LIST=tests.txt
 
 cat > $TEST_LIST <<EOF
 writeback_success_state noWriteback
 writeback_success_apply noPointState
-
 EOF
 
-rm -f $RESULTS_OUT && touch $RESULTS_OUT 
+rm -f $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
+touch $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
 
 cat $TEST_LIST | while read test_name pubber_opts; do
-    echo > $SEQUENCER_OUT && echo > $PUBBER_OUT 
-
     pubber_opts_for_printing="${pubber_opts:-<none>}"
     echo "TESTING $test_name with pubber opts: $pubber_opts_for_printing" | tee -a $RESULTS_OUT
 
@@ -29,7 +27,7 @@ cat $TEST_LIST | while read test_name pubber_opts; do
     tail -f $PUBBER_OUT | tee /dev/tty | grep -m 1 "Connection complete"
 
     bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name > $SEQUENCER_OUT 2>&1 & 
-    tail -f $SEQUENCER_OUT | tee /dev/tty | grep -E -m 1 "RESULT [a-z]+ $test_name " 
+    tail -f $SEQUENCER_OUT | tee /dev/tty | grep -E -m 1 "RESULT [a-z]+ $test_name "
 
     kill $(ps ax | fgrep sequencer | fgrep java | awk '{print $1}')
     kill $(ps ax | fgrep pubber | fgrep java | awk '{print $1}')
@@ -42,5 +40,3 @@ cat $TEST_LIST | while read test_name pubber_opts; do
 done
 
 cat $RESULTS_OUT
-
-diff $RESULTS_OUT etc/test_sequencer_solo.out
