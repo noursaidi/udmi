@@ -1,6 +1,7 @@
 package com.google.daq.mqtt.sequencer.sequences;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.daq.mqtt.sequencer.PointSequencer;
@@ -75,6 +76,14 @@ public class WritebackSequences extends PointSequencer {
     return false;
   }
 
+  protected PointsetEvent latestPointsetEvent() {
+    List<PointsetEvent>  events = getReceivedEvents(PointsetEvent.class);
+    if (events == null) {
+      return null;
+    }
+    return JsonUtil.convertTo(PointsetEvent.class, events.get(events.size() - 1));
+  }
+
   @Test
   public void writeback_success_apply() {
     TargetTestingModel appliedTarget = getTarget(APPLIED_STATE);
@@ -85,6 +94,7 @@ public class WritebackSequences extends PointSequencer {
     untilTrue(expectedPresentValue(appliedPoint, appliedValue),
         () -> presentValueIs(appliedPoint, appliedValue)
     );
+
   }
 
   @Test
@@ -106,7 +116,6 @@ public class WritebackSequences extends PointSequencer {
     untilTrue(expectedPresentValue(appliedPoint, appliedValue),
         () -> presentValueIs(appliedPoint, appliedValue)
     );
-
   }
 
   @Test
@@ -124,6 +133,15 @@ public class WritebackSequences extends PointSequencer {
     untilTrue(expectedValueState(invalidPoint, INVALID_STATE),
         () -> valueStateIs(invalidPoint, INVALID_STATE)
     );
+
+    getReceivedEvents(PointsetEvent.class); // clear events
+    // Wait 2 messages because sometimes a message is lingering in the system
+    // Assumes telemetry < 1/second
+    untilTrue("receive next pointset event",
+        () -> countReceivedEvents(PointsetEvent.class) > 1
+    );
+    PointsetEvent latestTelemetry = latestPointsetEvent();
+    assertNotEquals(invalidValue, latestTelemetry.points.get(invalidPoint).present_value);
   }
 
   @Test
