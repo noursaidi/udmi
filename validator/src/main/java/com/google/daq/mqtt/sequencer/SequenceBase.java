@@ -993,6 +993,15 @@ public abstract class SequenceBase {
     }
   }
 
+  protected int countReceivedEvents(Class clazz) {
+    SubFolder subFolder = CLASS_SUBFOLDER_MAP.get(clazz);
+    List<Map<String, Object>> events = receivedEvents.get(subFolder);
+    if (events == null) {
+      return 0;
+    }
+    return events.size();
+  }
+
   protected <T> List<T> getReceivedEvents(Class<T> clazz) {
     SubFolder subFolder = CLASS_SUBFOLDER_MAP.get(clazz);
     List<Map<String, Object>> events = receivedEvents.remove(subFolder);

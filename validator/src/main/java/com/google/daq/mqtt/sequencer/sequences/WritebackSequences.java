@@ -12,6 +12,9 @@ import udmi.schema.TargetTestingModel;
 import udmi.schema.PointsetEvent;
 import udmi.schema.PointPointsetEvent;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Validate UDMI writeback capabilities.
  */
@@ -29,8 +32,8 @@ public class WritebackSequences extends PointSequencer {
     Value_state rawState = deviceState.pointset.points.get(pointName).value_state;
     String valueState = rawState == null ? null : rawState.value();
     boolean equals = Objects.equals(expected, valueState);
-    System.err.printf("%s Value state %s equals %s = %s%n",
-        JsonUtil.getTimestamp(), expected, valueState, equals);
+    debug(String.format("%s Value state %s equals %s = %s%n",
+        JsonUtil.getTimestamp(), expected, valueState, equals));
     return equals;
   }
 
@@ -43,7 +46,14 @@ public class WritebackSequences extends PointSequencer {
     return String.format("point `%s` to have present_value `%s`", pointName, expectedValue);
   }
 
+  private PointsetEvent nextPointsetEvent() {
+    List<PointsetEvent> messages = getReceivedEvents(PointsetEvent.class);
+    return JsonUtil.convertTo(PointsetEvent.class, messages.get(0));
+  }
+
+
   private boolean presentValueIs(String pointName, Object desiredValue) {
+    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
     List<PointsetEvent> messages = getReceivedEvents(PointsetEvent.class);
     for (PointsetEvent message : messages) {
       PointsetEvent pointsetEvent = JsonUtil.convertTo(PointsetEvent.class, message);
@@ -62,23 +72,56 @@ public class WritebackSequences extends PointSequencer {
 
 
   @Test
-  public void writeback_success() {
-
+  public void writeback_success_apply() {
     TargetTestingModel appliedTarget = getTarget(APPLIED_STATE);
-
     String appliedPoint = appliedTarget.target_point;
     Object appliedValue = appliedTarget.target_value;
 
     deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
+    updateConfig();
+    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
+    getReceivedEvents(PointsetEvent.class);
+    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
+    untilTrue("receive one pointset event",
+        () -> (countReceivedEvents(PointsetEvent.class) > 0)
+    );
+
+    PointsetEvent nextPointsetEvent = nextPointsetEvent();
+    assertTrue((nextPointsetEvent.points.get(appliedPoint) != null));
+    assertEquals(appliedValue, nextPointsetEvent.points.get(appliedPoint).present_value);
+  }
+
+  @Test
+  public void writeback_success_state() {
+    TargetTestingModel appliedTarget = getTarget(APPLIED_STATE);
+    String appliedPoint = appliedTarget.target_point;
+    Object appliedValue = appliedTarget.target_value;
+
+    deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
+    updateConfig();
 
     untilTrue(expectedValueState(appliedPoint, APPLIED_STATE),
         () -> valueStateIs(appliedPoint, APPLIED_STATE)
     );
 
+    //Info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
+    //getReceivedEvents(PointsetEvent.class);
+    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
+    info("cleared");
+    getReceivedEvents(PointsetEvent.class);
     untilTrue(expectedPresentValue(appliedPoint, appliedValue),
-        () -> presentValueIs(appliedPoint, appliedValue)
+      () -> presentValueIs(appliedPoint, appliedValue)
     );
 
+    /* 
+    info("now > 0");
+    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
+  
+    PointsetEvent nextPointsetEvent = nextPointsetEvent();
+    info(JsonUtil.getTimestamp(nextPointsetEvent.timestamp));
+    assertTrue((nextPointsetEvent.points.get(appliedPoint) != null));
+    assertEquals(appliedValue, nextPointsetEvent.points.get(appliedPoint).present_value);
+    */
   }
 
 }
