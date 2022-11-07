@@ -994,7 +994,8 @@ public abstract class SequenceBase {
   }
 
   /**
-   * Returns the number of events of given type in the message buffer
+   * Returns the number of events of given type in the message buffer.
+   *
    * @param clazz Event type
    * @return Number of messages
    */

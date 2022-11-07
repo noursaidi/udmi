@@ -13,7 +13,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 import static udmi.schema.BlobsetConfig.SystemBlobsets.IOT_ENDPOINT_CONFIG;
 import static udmi.schema.EndpointConfiguration.Protocol.MQTT;
-import udmi.schema.PointPointsetState;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -78,6 +78,7 @@ import udmi.schema.Metrics;
 import udmi.schema.PointEnumerationEvent;
 import udmi.schema.PointPointsetConfig;
 import udmi.schema.PointPointsetModel;
+import udmi.schema.PointPointsetState;
 import udmi.schema.PointsetConfig;
 import udmi.schema.PointsetEvent;
 import udmi.schema.PointsetState;
@@ -599,7 +600,7 @@ public class Pubber {
   }
 
   private void updateState(AbstractPoint point) {
-    if (configuration.options.noPointState != null && configuration.options.noPointState){
+    if (configuration.options.noPointState != null && configuration.options.noPointState) {
       deviceState.pointset.points.put(point.getName(), new PointPointsetState());
       return;
     }
@@ -1267,7 +1268,7 @@ public class Pubber {
   }
 
   private void updatePointConfig(AbstractPoint point, PointPointsetConfig pointConfig) {
-    if (configuration.options.noWriteback != null && configuration.options.noWriteback ) {
+    if (configuration.options.noWriteback != null && configuration.options.noWriteback) {
       return;
     }
     point.setConfig(pointConfig);

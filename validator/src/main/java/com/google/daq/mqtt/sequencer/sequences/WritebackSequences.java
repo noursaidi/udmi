@@ -1,19 +1,20 @@
 package com.google.daq.mqtt.sequencer.sequences;
-import com.google.daq.mqtt.sequencer.PointSequencer;
-import com.google.udmi.util.JsonUtil;
-import java.util.Map;
-import java.util.Objects;
-import org.junit.Test;
-import java.util.List;
-import udmi.schema.DiscoveryEvent;
-import udmi.schema.Envelope.SubFolder;
-import udmi.schema.PointPointsetState.Value_state;
-import udmi.schema.TargetTestingModel;
-import udmi.schema.PointsetEvent;
-import udmi.schema.PointPointsetEvent;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import com.google.daq.mqtt.sequencer.PointSequencer;
+import com.google.udmi.util.JsonUtil;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import org.junit.Test;
+import udmi.schema.DiscoveryEvent;
+import udmi.schema.Envelope.SubFolder;
+import udmi.schema.PointPointsetEvent;
+import udmi.schema.PointPointsetState.Value_state;
+import udmi.schema.PointsetEvent;
+import udmi.schema.TargetTestingModel;
 
 /**
  * Validate UDMI writeback capabilities.
@@ -26,10 +27,11 @@ public class WritebackSequences extends PointSequencer {
   public static final String DEFAULT_STATE = null;
 
   /**
-   * Checks `value_state` for the point in the state matches the provided string
-   * @param pointName
-   * @param expected
-   * @return
+   * Checks `value_state` for the point in the state matches the provided string.
+   *
+   * @param pointName Target point
+   * @param expected Expected `value_state`
+   * @return true/false actual matches expected
    */
   private boolean valueStateIs(String pointName, String expected) {
     if (deviceState.pointset == null || !deviceState.pointset.points.containsKey(pointName)) {
@@ -43,29 +45,30 @@ public class WritebackSequences extends PointSequencer {
     return equals;
   }
 
-  /** Log string for value_state check */
+  /** Log string for value_state check. */
   private String expectedValueState(String pointName, String expectedValue) {
     String targetState = expectedValue == null ? "default (null)" : expectedValue;
     return String.format("point %s to have value_state %s", pointName, targetState);
   }
 
-  /** Log string for present_value check  */
+  /** Log string for present_value check. */
   private String expectedPresentValue(String pointName, Object expectedValue) {
     return String.format("point `%s` to have present_value `%s`", pointName, expectedValue);
   }
 
   /**
-   * Checks if the `present_value` for the given point matches the given value
-   * @param pointName
-   * @param desiredValue
-   * @return
+   * Checks if the `present_value` for the given point matches the given value.
+   *
+   * @param pointName Target point
+   * @param expectedValue Expected `present_value`
+   * @return true/false actual matches expected
    */
-  private boolean presentValueIs(String pointName, Object desiredValue) {
+  private boolean presentValueIs(String pointName, Object expectedValue) {
     List<PointsetEvent> messages = getReceivedEvents(PointsetEvent.class);
     for (PointsetEvent message : messages) {
       PointsetEvent pointsetEvent = JsonUtil.convertTo(PointsetEvent.class, message);
       if (pointsetEvent.points.get(pointName) != null 
-          && pointsetEvent.points.get(pointName).present_value == desiredValue) {
+          && pointsetEvent.points.get(pointName).present_value == expectedValue) {
         return true;
       }
     }
@@ -80,7 +83,7 @@ public class WritebackSequences extends PointSequencer {
     deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
 
     untilTrue(expectedPresentValue(appliedPoint, appliedValue),
-      () -> presentValueIs(appliedPoint, appliedValue)
+        () -> presentValueIs(appliedPoint, appliedValue)
     );
   }
 
@@ -91,17 +94,17 @@ public class WritebackSequences extends PointSequencer {
     Object appliedValue = appliedTarget.target_value;
 
     untilTrue(expectedValueState(appliedPoint, DEFAULT_STATE),
-      () -> valueStateIs(appliedPoint, DEFAULT_STATE)
+        () -> valueStateIs(appliedPoint, DEFAULT_STATE)
     );
 
     deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
 
     untilTrue(expectedValueState(appliedPoint, APPLIED_STATE),
-      () -> valueStateIs(appliedPoint, APPLIED_STATE)
+        () -> valueStateIs(appliedPoint, APPLIED_STATE)
     );
     
     untilTrue(expectedPresentValue(appliedPoint, appliedValue),
-      () -> presentValueIs(appliedPoint, appliedValue)
+        () -> presentValueIs(appliedPoint, appliedValue)
     );
 
   }
@@ -113,7 +116,7 @@ public class WritebackSequences extends PointSequencer {
     Object invalidValue = invalidTarget.target_value;
 
     untilTrue(expectedValueState(invalidPoint, DEFAULT_STATE),
-      () -> valueStateIs(invalidPoint, DEFAULT_STATE)
+        () -> valueStateIs(invalidPoint, DEFAULT_STATE)
     );
 
     deviceConfig.pointset.points.get(invalidPoint).set_value = invalidValue;
@@ -130,7 +133,7 @@ public class WritebackSequences extends PointSequencer {
     Object failureValue = failureTarget.target_value;
 
     untilTrue(expectedValueState(failurePoint, DEFAULT_STATE),
-      () -> valueStateIs(failurePoint, DEFAULT_STATE)
+        () -> valueStateIs(failurePoint, DEFAULT_STATE)
     );
 
     deviceConfig.pointset.points.get(failurePoint).set_value = failureValue;
