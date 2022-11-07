@@ -9,6 +9,7 @@ DEVICE_ID=AHU-1
 RESULTS_OUT=/tmp/sequencer_solo.out
 PUBBER_OUT=/tmp/pubber.log
 SEQUENCER_OUT=/tmp/sequencer.log
+TEST_LIST=/tmp/solo_sequencer_tests.txt
 
 cat > $TEST_LIST <<EOF
 writeback_success_state noWriteback
