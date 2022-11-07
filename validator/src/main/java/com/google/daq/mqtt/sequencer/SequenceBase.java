@@ -993,6 +993,11 @@ public abstract class SequenceBase {
     }
   }
 
+  /**
+   * Returns the number of events of given type in the message buffer
+   * @param clazz Event type
+   * @return Number of messages
+   */
   protected int countReceivedEvents(Class clazz) {
     SubFolder subFolder = CLASS_SUBFOLDER_MAP.get(clazz);
     List<Map<String, Object>> events = receivedEvents.get(subFolder);

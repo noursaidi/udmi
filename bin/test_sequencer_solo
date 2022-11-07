@@ -4,26 +4,25 @@ PROJECT_ID=daq1-273309
 SITE_PATH=sites/udmi_site_model
 DEVICE_ID=AHU-1
 
-RESULTS_OUT=seq.log
-PUBBER_OUT=pubber.log
-SEQUENCER_OUT=sequencer.log
+RESULTS_OUT=/tmp/test_sequencer_solo.out
+PUBBER_OUT=/tmp/pubber.log
+SEQUENCER_OUT=/tmp/sequencer.log
 
 TEST_LIST=tests.txt
 
 cat > $TEST_LIST <<EOF
-writeback_success_state 
+writeback_success_state noWriteback
+writeback_success_apply noPointState
+
 EOF
 
-#
-#writeback_success_state noPointState
-#writeback_success_apply noWriteback
-#writeback_success_apply noPointState
-
-rm -f $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
-touch $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
+rm -f $RESULTS_OUT && touch $RESULTS_OUT 
 
 cat $TEST_LIST | while read test_name pubber_opts; do
-    echo "testing $test_name with pubber opts $pubber_opts" | tee -a $RESULTS_OUT
+    echo > $SEQUENCER_OUT && echo > $PUBBER_OUT 
+
+    pubber_opts_for_printing="${pubber_opts:-<none>}"
+    echo "TESTING $test_name with pubber opts: $pubber_opts_for_printing" | tee -a $RESULTS_OUT
 
     serial_no=sequencer-$RANDOM
     bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
@@ -35,13 +34,13 @@ cat $TEST_LIST | while read test_name pubber_opts; do
     kill $(ps ax | fgrep sequencer | fgrep java | awk '{print $1}')
     kill $(ps ax | fgrep pubber | fgrep java | awk '{print $1}')
 
-   
     grep -E -m 1 "RESULT [a-z]+ $test_name " $SEQUENCER_OUT \
-        | sed -e 's/.*sequencer RESULT/RESULT/' \
+        | sed -e "s/.*sequencer RESULT/RESULT/" \
         >> $RESULTS_OUT
     sleep 2
+
 done
 
 cat $RESULTS_OUT
 
-#fgrep -m 1 -E  "RESULT [a-z]+ writeback_success" sequencer.log | sed -e 's/.*sequencer RESULT/RESULT/'
+diff $RESULTS_OUT etc/test_sequencer_solo.out

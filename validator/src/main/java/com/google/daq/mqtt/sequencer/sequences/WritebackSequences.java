@@ -25,6 +25,12 @@ public class WritebackSequences extends PointSequencer {
   public static final String APPLIED_STATE = "applied";
   public static final String DEFAULT_STATE = null;
 
+  /**
+   * Checks `value_state` for the point in the state matches the provided string
+   * @param pointName
+   * @param expected
+   * @return
+   */
   private boolean valueStateIs(String pointName, String expected) {
     if (deviceState.pointset == null || !deviceState.pointset.points.containsKey(pointName)) {
       return false;
@@ -37,58 +43,45 @@ public class WritebackSequences extends PointSequencer {
     return equals;
   }
 
+  /** Log string for value_state check */
   private String expectedValueState(String pointName, String expectedValue) {
     String targetState = expectedValue == null ? "default (null)" : expectedValue;
     return String.format("point %s to have value_state %s", pointName, targetState);
   }
 
+  /** Log string for present_value check  */
   private String expectedPresentValue(String pointName, Object expectedValue) {
     return String.format("point `%s` to have present_value `%s`", pointName, expectedValue);
   }
 
-  private PointsetEvent nextPointsetEvent() {
-    List<PointsetEvent> messages = getReceivedEvents(PointsetEvent.class);
-    return JsonUtil.convertTo(PointsetEvent.class, messages.get(0));
-  }
-
-
+  /**
+   * Checks if the `present_value` for the given point matches the given value
+   * @param pointName
+   * @param desiredValue
+   * @return
+   */
   private boolean presentValueIs(String pointName, Object desiredValue) {
-    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
     List<PointsetEvent> messages = getReceivedEvents(PointsetEvent.class);
     for (PointsetEvent message : messages) {
       PointsetEvent pointsetEvent = JsonUtil.convertTo(PointsetEvent.class, message);
-      if (pointsetEvent.points.get(pointName) == null) {
-        return false;
-      }
-      info("Value " + pointsetEvent.points.get(pointName).present_value);
-      info("desired value is " + desiredValue);
-      info((desiredValue == pointsetEvent.points.get(pointName).present_value) ? "yes" : "no");
-      if (pointsetEvent.points.get(pointName).present_value == desiredValue) {
+      if (pointsetEvent.points.get(pointName) != null 
+          && pointsetEvent.points.get(pointName).present_value == desiredValue) {
         return true;
       }
     }
     return false;
   }
 
-
   @Test
   public void writeback_success_apply() {
     TargetTestingModel appliedTarget = getTarget(APPLIED_STATE);
     String appliedPoint = appliedTarget.target_point;
     Object appliedValue = appliedTarget.target_value;
-
     deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
-    updateConfig();
-    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
-    getReceivedEvents(PointsetEvent.class);
-    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
-    untilTrue("receive one pointset event",
-        () -> (countReceivedEvents(PointsetEvent.class) > 0)
-    );
 
-    PointsetEvent nextPointsetEvent = nextPointsetEvent();
-    assertTrue((nextPointsetEvent.points.get(appliedPoint) != null));
-    assertEquals(appliedValue, nextPointsetEvent.points.get(appliedPoint).present_value);
+    untilTrue(expectedPresentValue(appliedPoint, appliedValue),
+      () -> presentValueIs(appliedPoint, appliedValue)
+    );
   }
 
   @Test
@@ -97,31 +90,55 @@ public class WritebackSequences extends PointSequencer {
     String appliedPoint = appliedTarget.target_point;
     Object appliedValue = appliedTarget.target_value;
 
-    deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
-    updateConfig();
-
-    untilTrue(expectedValueState(appliedPoint, APPLIED_STATE),
-        () -> valueStateIs(appliedPoint, APPLIED_STATE)
+    untilTrue(expectedValueState(appliedPoint, DEFAULT_STATE),
+      () -> valueStateIs(appliedPoint, DEFAULT_STATE)
     );
 
-    //Info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
-    //getReceivedEvents(PointsetEvent.class);
-    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
-    info("cleared");
-    getReceivedEvents(PointsetEvent.class);
+    deviceConfig.pointset.points.get(appliedPoint).set_value = appliedValue;
+
+    untilTrue(expectedValueState(appliedPoint, APPLIED_STATE),
+      () -> valueStateIs(appliedPoint, APPLIED_STATE)
+    );
+    
     untilTrue(expectedPresentValue(appliedPoint, appliedValue),
       () -> presentValueIs(appliedPoint, appliedValue)
     );
 
-    /* 
-    info("now > 0");
-    info("received events: " + Integer.toString(countReceivedEvents(PointsetEvent.class)));
-  
-    PointsetEvent nextPointsetEvent = nextPointsetEvent();
-    info(JsonUtil.getTimestamp(nextPointsetEvent.timestamp));
-    assertTrue((nextPointsetEvent.points.get(appliedPoint) != null));
-    assertEquals(appliedValue, nextPointsetEvent.points.get(appliedPoint).present_value);
-    */
+  }
+
+  @Test
+  public void writeback_invalid_state() {
+    TargetTestingModel invalidTarget = getTarget(INVALID_STATE);
+    String invalidPoint = invalidTarget.target_point;
+    Object invalidValue = invalidTarget.target_value;
+
+    untilTrue(expectedValueState(invalidPoint, DEFAULT_STATE),
+      () -> valueStateIs(invalidPoint, DEFAULT_STATE)
+    );
+
+    deviceConfig.pointset.points.get(invalidPoint).set_value = invalidValue;
+
+    untilTrue(expectedValueState(invalidPoint, INVALID_STATE),
+        () -> valueStateIs(invalidPoint, INVALID_STATE)
+    );
+  }
+
+  @Test
+  public void writeback_failure_state() {
+    TargetTestingModel failureTarget = getTarget(FAILURE_STATE);
+    String failurePoint = failureTarget.target_point;
+    Object failureValue = failureTarget.target_value;
+
+    untilTrue(expectedValueState(failurePoint, DEFAULT_STATE),
+      () -> valueStateIs(failurePoint, DEFAULT_STATE)
+    );
+
+    deviceConfig.pointset.points.get(failurePoint).set_value = failureValue;
+
+    untilTrue(expectedValueState(failurePoint, FAILURE_STATE),
+        () -> valueStateIs(failurePoint, FAILURE_STATE)
+    );
   }
 
 }
+
