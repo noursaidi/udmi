@@ -25,10 +25,12 @@ cat $TEST_LIST | while read test_name pubber_opts; do
 
     serial_no=sequencer-$RANDOM
     bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
-    tail -f $PUBBER_OUT | tee /dev/tty | grep -m 1 "Connection complete"
+    tail -f $PUBBER_OUT | grep -m 1 "Connection complete"
 
     bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name > $SEQUENCER_OUT 2>&1 & 
-    tail -f $SEQUENCER_OUT | tee /dev/tty | grep -E -m 1 "RESULT [a-z]+ $test_name "
+    tail -f $SEQUENCER_OUT | grep -E -m 1 "RESULT [a-z]+ $test_name "
+
+    more $PUBBER_OUT $SEQUENCER_OUT
 
     kill $(ps ax | fgrep sequencer | fgrep java | awk '{print $1}')
     kill $(ps ax | fgrep pubber | fgrep java | awk '{print $1}')
