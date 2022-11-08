@@ -20,7 +20,7 @@ EOF
 rm -f $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
 touch $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
 
-cat $TEST_LIST | while read test_name pubber_opts; do
+while read test_name pubber_opts; do
     pubber_opts_for_printing="${pubber_opts:-<none>}"
     echo "TESTING $test_name with pubber opts: $pubber_opts_for_printing" | tee -a $RESULTS_OUT
 
@@ -52,6 +52,6 @@ cat $TEST_LIST | while read test_name pubber_opts; do
         >> $RESULTS_OUT
     sleep 2
 
-done
+done < <(cat $TEST_LIST)
 
 cat $RESULTS_OUT
