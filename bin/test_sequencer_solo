@@ -27,7 +27,7 @@ cat $TEST_LIST | while read test_name pubber_opts; do
     bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
     tail -f $PUBBER_OUT | grep -m 1 "Connection complete"
 
-    bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name > $SEQUENCER_OUT 2>&1 & 
+    timeout 120 bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name > $SEQUENCER_OUT 2>&1 & 
     tail -f $SEQUENCER_OUT | grep -E -m 1 "RESULT [a-z]+ $test_name "
 
     cat $PUBBER_OUT
