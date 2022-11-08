@@ -105,6 +105,15 @@ jobs:
         run: |
           bin/setup_base
           bin/clone_model
+      - name: sequence solo tests
+        env:
+          GCP_TARGET_PROJECT: ${{ secrets.GCP_TARGET_PROJECT }}
+          SEQUENCER_OPTS: ${{ secrets.SEQUENCER_OPTS }}
+        if: "${{ env.GCP_TARGET_PROJECT != '' }}"
+        run: |
+          bin/test_sequencer_solo $GCP_TARGET_PROJECT
+          more /tmp/sequencer_solo.out
+          diff -u /tmp/sequencer_solo.out etc/sequencer_solo.out
       - name: telemetry validator
         env:
           GCP_TARGET_PROJECT: ${{ secrets.GCP_TARGET_PROJECT }}
@@ -127,15 +136,6 @@ jobs:
           ls -1 sites/udmi_site_model/out/devices/AHU-1/tests/ | xargs -I% diff -u \
               sites/udmi_site_model/out/devices/AHU-1/tests/%/sequence.md \
               validator/sequences/%/sequence.md
-      - name: sequence solo tests
-        env:
-          GCP_TARGET_PROJECT: ${{ secrets.GCP_TARGET_PROJECT }}
-          SEQUENCER_OPTS: ${{ secrets.SEQUENCER_OPTS }}
-        if: "${{ env.GCP_TARGET_PROJECT != '' }}"
-        run: |
-          bin/test_sequencer_solo $GCP_TARGET_PROJECT
-          more /tmp/sequencer_solo.out
-          diff -u /tmp/sequencer_solo.out etc/sequencer_solo.out
       - name: output logs
         if: ${{ always() }}
         run: |
