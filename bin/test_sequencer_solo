@@ -50,9 +50,11 @@ while read test_name pubber_opts; do
 
     kill $(ps ax | fgrep pubber | fgrep java | awk '{print $1}')
 
+    echo pregrep 
     grep -E -m 1 "RESULT [a-z]+ $test_name " $SEQUENCER_OUT \
         | sed -e "s/.*sequencer RESULT/RESULT/" \
         >> $RESULTS_OUT
+    echo postgrep
     sleep 2
 
 done < $TEST_LIST
