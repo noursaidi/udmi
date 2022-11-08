@@ -25,7 +25,20 @@ while read test_name pubber_opts; do
 
     serial_no=sequencer-$RANDOM
     bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
-    tail -f $PUBBER_OUT | grep -m 1 "Connection complete"
+    WAITING=30
+    for i in `seq 1 $WAITING`; do
+        if fgrep "Connection complete" $PUBBER_OUT; then
+            break
+        fi
+        echo Waiting for pubber startup $((WAITING - i))...
+        sleep 2
+    done
+
+    if [[ $i -eq $WAITING ]]; then
+        echo pubber startup failed:
+        cat $PUBBER_OUT
+        false
+    fi
 
     bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name 2>&1 | tee $SEQUENCER_OUT
 
