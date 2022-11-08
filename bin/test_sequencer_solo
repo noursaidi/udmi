@@ -25,7 +25,9 @@ cat $TEST_LIST | while read test_name pubber_opts; do
 
     serial_no=sequencer-$RANDOM
     bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
-    tail -f $PUBBER_OUT | grep -m 1 "Connection complete"
+    sleep 15
+    cat $PUBBER_OUT
+    #tail -f $PUBBER_OUT | grep -m 1 "Connection complete"
 
     timeout 120 bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name 2>&1 | tee $SEQUENCER_OUT 
     #tail -f $SEQUENCER_OUT | grep -E -m 1 "RESULT [a-z]+ $test_name "
