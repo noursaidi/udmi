@@ -25,7 +25,7 @@ cat $TEST_LIST | while read test_name pubber_opts; do
 
     serial_no=sequencer-$RANDOM
     bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
-    WAITING=10
+    WAITING=30
     for i in `seq 1 $WAITING`; do
         if fgrep "Connection complete" $PUBBER_OUT; then
             break
