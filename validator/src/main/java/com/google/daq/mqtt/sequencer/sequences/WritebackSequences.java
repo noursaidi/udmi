@@ -133,15 +133,7 @@ public class WritebackSequences extends PointSequencer {
     untilTrue(expectedValueState(invalidPoint, INVALID_STATE),
         () -> valueStateIs(invalidPoint, INVALID_STATE)
     );
-
-    getReceivedEvents(PointsetEvent.class); // clear events
-    // Wait 2 messages because sometimes a message is lingering in the system
-    // Assumes telemetry < 1/second
-    untilTrue("receive next pointset event",
-        () -> countReceivedEvents(PointsetEvent.class) > 1
-    );
-    PointsetEvent latestTelemetry = latestPointsetEvent();
-    assertNotEquals(invalidValue, latestTelemetry.points.get(invalidPoint).present_value);
+  
   }
 
   @Test
