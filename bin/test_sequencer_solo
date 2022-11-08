@@ -14,13 +14,17 @@ TEST_LIST=/tmp/solo_sequencer_tests.txt
 cat > $TEST_LIST <<EOF
 writeback_success_state noWriteback
 writeback_success_apply noPointState
-
+# last line hacky fix for github actions
 EOF
 
 rm -f $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
 touch $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
 
 while read test_name pubber_opts; do
+    if [[ $test_name == "#" ]]; then
+        break
+    fi
+
     pubber_opts_for_printing="${pubber_opts:-<none>}"
     echo "TESTING $test_name with pubber opts: $pubber_opts_for_printing" | tee -a $RESULTS_OUT
 
