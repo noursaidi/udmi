@@ -14,6 +14,7 @@ TEST_LIST=/tmp/solo_sequencer_tests.txt
 cat > $TEST_LIST <<EOF
 writeback_success_state noWriteback
 writeback_success_apply noPointState
+
 EOF
 
 rm -f $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
