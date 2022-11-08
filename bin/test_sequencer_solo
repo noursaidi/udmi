@@ -21,41 +21,9 @@ rm -f $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT
 touch $RESULTS_OUT $SEQUENCER_OUT $PUBBER_OUT 
 
 while read test_name pubber_opts; do
-    if [[ $test_name == "#" ]]; then
-        break
-    fi
+    echo $test_name $pubber_opts
 
-    pubber_opts_for_printing="${pubber_opts:-<none>}"
-    echo "TESTING $test_name with pubber opts: $pubber_opts_for_printing" | tee -a $RESULTS_OUT
-
-    serial_no=sequencer-$RANDOM
-    bin/pubber $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $pubber_opts > $PUBBER_OUT 2>&1 &
-    WAITING=30
-    for i in `seq 1 $WAITING`; do
-        if fgrep "Connection complete" $PUBBER_OUT; then
-            break
-        fi
-        echo Waiting for pubber startup $((WAITING - i))...
-        sleep 2
-    done
-
-    if [[ $i -eq $WAITING ]]; then
-        echo pubber startup failed:
-        cat $PUBBER_OUT
-        false
-    fi
-
-    bin/sequencer $SITE_PATH $PROJECT_ID $DEVICE_ID $serial_no $test_name 2>&1 | tee $SEQUENCER_OUT
-
-    more $PUBBER_OUT | cat
-
-    kill $(ps ax | fgrep pubber | fgrep java | awk '{print $1}')
-
-    grep -E -m 1 "RESULT [a-z]+ $test_name " $SEQUENCER_OUT \
-        | sed -e "s/.*sequencer RESULT/RESULT/" \
-        >> $RESULTS_OUT
-    sleep 2
-
-done < <(cat $TEST_LIST)
+done < $TEST_LIST
 
 cat $RESULTS_OUT
+exit 1
