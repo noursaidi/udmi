@@ -106,7 +106,7 @@ public abstract class SequenceBase {
   private static final String SYSTEM_LOG = "system.log";
   private static final String SEQUENCE_MD = "sequence.md";
   private static final String CONFIG_NONCE_KEY = "debug_config_nonce";
-  private static final long CLEAN_START_DELAY_MS = 20 * 1000;
+  private static final long CLEAN_START_DELAY_MS = 1 * 1000;
   protected static Metadata deviceMetadata;
   protected static String projectId;
   protected static String deviceId;
