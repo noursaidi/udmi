@@ -25,7 +25,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "redirectRegistry",
     "noPointState",
     "disableWriteback",
-    "noWriteback"
+    "noWriteback",
+    "clockDrift"
 })
 @Generated("jsonschema2pojo")
 public class PubberOptions {
@@ -60,10 +61,18 @@ public class PubberOptions {
     @JsonProperty("noWriteback")
     @JsonPropertyDescription("Removes writeback functionality, mimicking a device without Writeback support")
     public Boolean noWriteback;
+    /**
+     * Milliseconds to drift the clock by from now. Positive into future, negative into past
+     * 
+     */
+    @JsonProperty("clockDrift")
+    @JsonPropertyDescription("Milliseconds to drift the clock by from now. Positive into future, negative into past")
+    public Integer clockDrift;
 
     @Override
     public int hashCode() {
         int result = 1;
+        result = ((result* 31)+((this.clockDrift == null)? 0 :this.clockDrift.hashCode()));
         result = ((result* 31)+((this.redirectRegistry == null)? 0 :this.redirectRegistry.hashCode()));
         result = ((result* 31)+((this.noPointState == null)? 0 :this.noPointState.hashCode()));
         result = ((result* 31)+((this.disableWriteback == null)? 0 :this.disableWriteback.hashCode()));
@@ -86,7 +95,7 @@ public class PubberOptions {
             return false;
         }
         PubberOptions rhs = ((PubberOptions) other);
-        return (((((((((((this.redirectRegistry == rhs.redirectRegistry)||((this.redirectRegistry!= null)&&this.redirectRegistry.equals(rhs.redirectRegistry)))&&((this.noPointState == rhs.noPointState)||((this.noPointState!= null)&&this.noPointState.equals(rhs.noPointState))))&&((this.disableWriteback == rhs.disableWriteback)||((this.disableWriteback!= null)&&this.disableWriteback.equals(rhs.disableWriteback))))&&((this.noHardware == rhs.noHardware)||((this.noHardware!= null)&&this.noHardware.equals(rhs.noHardware))))&&((this.extraField == rhs.extraField)||((this.extraField!= null)&&this.extraField.equals(rhs.extraField))))&&((this.messageTrace == rhs.messageTrace)||((this.messageTrace!= null)&&this.messageTrace.equals(rhs.messageTrace))))&&((this.noWriteback == rhs.noWriteback)||((this.noWriteback!= null)&&this.noWriteback.equals(rhs.noWriteback))))&&((this.missingPoint == rhs.missingPoint)||((this.missingPoint!= null)&&this.missingPoint.equals(rhs.missingPoint))))&&((this.noConfigAck == rhs.noConfigAck)||((this.noConfigAck!= null)&&this.noConfigAck.equals(rhs.noConfigAck))))&&((this.extraPoint == rhs.extraPoint)||((this.extraPoint!= null)&&this.extraPoint.equals(rhs.extraPoint))));
+        return ((((((((((((this.clockDrift == rhs.clockDrift)||((this.clockDrift!= null)&&this.clockDrift.equals(rhs.clockDrift)))&&((this.redirectRegistry == rhs.redirectRegistry)||((this.redirectRegistry!= null)&&this.redirectRegistry.equals(rhs.redirectRegistry))))&&((this.noPointState == rhs.noPointState)||((this.noPointState!= null)&&this.noPointState.equals(rhs.noPointState))))&&((this.disableWriteback == rhs.disableWriteback)||((this.disableWriteback!= null)&&this.disableWriteback.equals(rhs.disableWriteback))))&&((this.noHardware == rhs.noHardware)||((this.noHardware!= null)&&this.noHardware.equals(rhs.noHardware))))&&((this.extraField == rhs.extraField)||((this.extraField!= null)&&this.extraField.equals(rhs.extraField))))&&((this.messageTrace == rhs.messageTrace)||((this.messageTrace!= null)&&this.messageTrace.equals(rhs.messageTrace))))&&((this.noWriteback == rhs.noWriteback)||((this.noWriteback!= null)&&this.noWriteback.equals(rhs.noWriteback))))&&((this.missingPoint == rhs.missingPoint)||((this.missingPoint!= null)&&this.missingPoint.equals(rhs.missingPoint))))&&((this.noConfigAck == rhs.noConfigAck)||((this.noConfigAck!= null)&&this.noConfigAck.equals(rhs.noConfigAck))))&&((this.extraPoint == rhs.extraPoint)||((this.extraPoint!= null)&&this.extraPoint.equals(rhs.extraPoint))));
     }
 
 }

@@ -318,7 +318,7 @@ public class Pubber {
   }
 
   private static Date getCurrentTimestamp() {
-    return new Date();
+    return Date.from(Instant.now().plusSeconds(900));
   }
 
   private AbstractPoint makePoint(String name, PointPointsetModel point) {

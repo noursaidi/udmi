@@ -15,6 +15,7 @@ class PubberOptions:
     self.noPointState = None
     self.disableWriteback = None
     self.noWriteback = None
+    self.clockDrift = None
 
   @staticmethod
   def from_dict(source):
@@ -31,6 +32,7 @@ class PubberOptions:
     result.noPointState = source.get('noPointState')
     result.disableWriteback = source.get('disableWriteback')
     result.noWriteback = source.get('noWriteback')
+    result.clockDrift = source.get('clockDrift')
     return result
 
   @staticmethod
@@ -71,4 +73,6 @@ class PubberOptions:
       result['disableWriteback'] = self.disableWriteback # 5
     if self.noWriteback:
       result['noWriteback'] = self.noWriteback # 5
+    if self.clockDrift:
+      result['clockDrift'] = self.clockDrift # 5
     return result

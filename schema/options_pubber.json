@@ -35,6 +35,10 @@
     "noWriteback": {
       "type": "boolean",
       "description": "Removes writeback functionality, mimicking a device without Writeback support" 
+    },
+    "clockDrift": {
+      "type": "integer",
+      "description": "Milliseconds to drift the clock by from now. Positive into future, negative into past"
     }
   }
 }
