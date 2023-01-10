@@ -118,7 +118,12 @@ exports.processMessage = async (event, context) => {
       // Upgrade software as applicable
       if("firmware" in msg.system && "version" in msg.system.firmware) {
         // Legacy (<1.3.14)
-        softwareEntries.push({id: "firmware", version:msg.system.firmware.version});
+        if (Array.isArray(msg.system.firmware.version)) {
+          const firmware = msg.system.firmware.version.toString();
+        } else {
+          const firmware = msg.system.firmware.version;
+        }
+        softwareEntries.push({id: "firmware", version:firmware});
       } else {
         // Modern (>1.3.14)
         for (const [key, value] of Object.entries(msg.system.software)) {
