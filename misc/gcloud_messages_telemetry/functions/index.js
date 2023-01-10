@@ -10,13 +10,19 @@ const STATE_TABLE = process.env.STATE_TABLE
 const STATE = 1
 const EVENT_POINTSET = 2
 const EVENT_SYSTEM = 3
+const NOT_UDMI = 7
 const EVENT_OTHER = 9
 
 const util = require('util')
 
 exports.processMessage = async (event, context) => {
+  
   // Only process messages from device and ignore all message fragments
-  if (event.attributes.subType == 'state' && event.attributes.subFolder == 'update') {
+  if (!event.attributes.hasOwnProperty('origin')) {
+    var earlyExit = true;
+    var messageType = NOT_UDMI
+  }
+  else if(event.attributes.subType == 'state' && event.attributes.subFolder == 'update') {
     var messageType = STATE
   } else if (!event.attributes.hasOwnProperty('subType')) {
     if (event.attributes.subFolder == 'pointset'){
@@ -30,6 +36,7 @@ exports.processMessage = async (event, context) => {
     // Not a message from IoT Core
     return;
   }
+
   const pubsubMessage = event.data;
   const objStr = Buffer.from(pubsubMessage, 'base64').toString('utf8');
 
@@ -59,7 +66,11 @@ exports.processMessage = async (event, context) => {
   };
 
   promises.push(bigquery.dataset(DATASET_ID).table(MESSAGES_TABLE).insert([messageRow]));
-  
+
+  if (!event.attributes.hasOwnProperty('origin'){
+    return await Promise.all(promises);
+  }
+
   try {
     var msg = JSON.parse(objStr);
   } catch {
