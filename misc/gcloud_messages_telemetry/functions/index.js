@@ -67,7 +67,7 @@ exports.processMessage = async (event, context) => {
 
   promises.push(bigquery.dataset(DATASET_ID).table(MESSAGES_TABLE).insert([messageRow]));
 
-  if (!event.attributes.hasOwnProperty('origin'){
+  if (earlyExit) {
     return await Promise.all(promises);
   }
 
