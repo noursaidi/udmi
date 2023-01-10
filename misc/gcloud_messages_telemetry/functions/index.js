@@ -119,9 +119,9 @@ exports.processMessage = async (event, context) => {
       if("firmware" in msg.system && "version" in msg.system.firmware) {
         // Legacy (<1.3.14)
         if (Array.isArray(msg.system.firmware.version)) {
-          const firmware = msg.system.firmware.version.toString();
+          var firmware = msg.system.firmware.version.toString();
         } else {
-          const firmware = msg.system.firmware.version;
+          var firmware = msg.system.firmware.version;
         }
         softwareEntries.push({id: "firmware", version:firmware});
       } else {
