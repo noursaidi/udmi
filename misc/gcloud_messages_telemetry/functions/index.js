@@ -102,7 +102,7 @@ exports.processMessage = async (event, context) => {
         promises.push(bigquery.dataset(DATASET_ID).table(TELEMETRY_TABLE).insert(rows))
       }
     } catch (err) {
-      console.log(err.message)
+      console.log(util.inspect(err, false, null, false))
     }
     
   } else if (messageType == STATE) {
@@ -165,11 +165,16 @@ exports.processMessage = async (event, context) => {
 
       promises.push(bigquery.dataset(DATASET_ID).table(STATE_TABLE).insert([stateRow]));
     } catch (err) {
-      console.log(util.inspect(err))
+      console.log(util.inspect(err, false, null, false))
     }
   }
-  
-  return await Promise.all(promises);
+  try
+  {
+    await Promise.all(promises);
+  } catch (err) {
+    console.log(util.inspect(err, false, null, false))
+  }
+  return
 };
 
 function isString(variable){
