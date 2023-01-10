@@ -21,8 +21,7 @@ exports.processMessage = async (event, context) => {
   if (!event.attributes.hasOwnProperty('origin')) {
     var earlyExit = true;
     var messageType = NOT_UDMI
-  }
-  else if(event.attributes.subType == 'state' && event.attributes.subFolder == 'update') {
+  } else if(event.attributes.subType == 'state' && event.attributes.subFolder == 'update') {
     var messageType = STATE
   } else if (!event.attributes.hasOwnProperty('subType')) {
     if (event.attributes.subFolder == 'pointset'){
@@ -166,7 +165,7 @@ exports.processMessage = async (event, context) => {
 
       promises.push(bigquery.dataset(DATASET_ID).table(STATE_TABLE).insert([stateRow]));
     } catch (err) {
-      console.log(err.message);
+      console.log(util.inspect(err))
     }
   }
   
