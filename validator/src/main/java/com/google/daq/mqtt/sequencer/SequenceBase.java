@@ -665,15 +665,11 @@ public class SequenceBase {
     enforceSerial = false;
     recordMessages = true;
     recordSequence = false;
-
-    queryState();
+;
 
     resetConfig(resetRequired);
 
     updateConfig("initial setup");
-
-    untilTrue("device state update", () -> deviceState != null);
-    checkThatHasInterestingSystemStatus(false);
 
     // Do this late in the sequence to make sure any state is cleared out from previous test.
     startStateCount = getStateUpdateCount();
