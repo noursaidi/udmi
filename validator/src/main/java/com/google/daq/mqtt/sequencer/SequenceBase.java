@@ -712,7 +712,6 @@ public class SequenceBase {
         configTransactions.clear();
         SENT_CONFIG_DIFFERNATOR.resetState(deviceConfig);
         updateConfig("full reset");
-        untilHasInterestingSystemStatus(false);
       }
       resetDeviceConfig(false);
       updateConfig("soft reset");
