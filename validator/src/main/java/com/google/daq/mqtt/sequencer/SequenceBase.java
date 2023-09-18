@@ -968,8 +968,6 @@ public class SequenceBase {
     debug(format("stage done %s at %s", condition, timeSinceStart()));
     recordSequence = false;
 
-    checkThatHasInterestingSystemStatus(false);
-
     recordMessages = false;
     configAcked = false;
   }
