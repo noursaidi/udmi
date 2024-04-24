@@ -311,8 +311,11 @@ public abstract class ProcessorBase extends ContainerBase implements SimpleHandl
     }
 
     String updateTimestamp = isoConvert();
-    payload.replace(TIMESTAMP_KEY, updateTimestamp);
-    payload.replace(VERSION_KEY, UDMI_VERSION);
+    
+    if (!reason.equals("update")){
+      payload.put(TIMESTAMP_KEY, updateTimestamp);
+      payload.put(VERSION_KEY, UDMI_VERSION);
+    }
 
     augmentPayload(payload, attributes.transactionId, previous.getKey());
     mungeConfigDebug(attributes, updateTimestamp, reason);
