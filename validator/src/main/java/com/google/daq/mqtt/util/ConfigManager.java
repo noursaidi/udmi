@@ -243,8 +243,15 @@ public class ConfigManager {
     LocalnetConfig localnetConfig = new LocalnetConfig();
     localnetConfig.families = new HashMap<>();
     metadata.localnet.families.keySet()
-        .forEach(family -> localnetConfig.families.put(family, new FamilyLocalnetConfig()));
+        .forEach(family -> {
+          localnetConfig.families.put(family, new FamilyLocalnetConfig());
+          localnetConfig.families.get(family).addr = metadata.localnet.families.get(family).addr;
+          
+          
+  });
+    
     return localnetConfig;
+
   }
 
   /**

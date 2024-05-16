@@ -3,6 +3,7 @@ package udmi.schema;
 
 import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -14,15 +15,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-
+    "addr"
 })
 @Generated("jsonschema2pojo")
 public class FamilyLocalnetConfig {
 
+    @JsonProperty("addr")
+    public String addr;
 
     @Override
     public int hashCode() {
         int result = 1;
+        result = ((result* 31)+((this.addr == null)? 0 :this.addr.hashCode()));
         return result;
     }
 
@@ -35,7 +39,7 @@ public class FamilyLocalnetConfig {
             return false;
         }
         FamilyLocalnetConfig rhs = ((FamilyLocalnetConfig) other);
-        return true;
+        return ((this.addr == rhs.addr)||((this.addr!= null)&&this.addr.equals(rhs.addr)));
     }
 
 }

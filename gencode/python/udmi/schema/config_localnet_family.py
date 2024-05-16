@@ -5,13 +5,14 @@ class FamilyLocalnetConfig:
   """Generated schema class"""
 
   def __init__(self):
-    pass
+    self.addr = None
 
   @staticmethod
   def from_dict(source):
     if not source:
       return None
     result = FamilyLocalnetConfig()
+    result.addr = source.get('addr')
     return result
 
   @staticmethod
@@ -32,4 +33,6 @@ class FamilyLocalnetConfig:
 
   def to_dict(self):
     result = {}
+    if self.addr:
+      result['addr'] = self.addr # 5
     return result
