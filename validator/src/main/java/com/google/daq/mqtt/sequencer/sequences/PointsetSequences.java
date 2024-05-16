@@ -67,7 +67,7 @@ public class PointsetSequences extends PointsetBase {
 
       waitFor("pointset state matches config", EVENT_WAIT_DURATION, () -> {
         Set<String> configPoints = deviceConfig.pointset.points.keySet();
-        Set<String> statePoints = deviceState.pointset.points.keySet();
+        Set<String> statePoints = catchToNull(() -> deviceState.pointset.points.keySet()) == null ? Collections.<String>emptySet() : deviceState.pointset.points.keySet();
         String prefix = format("config %s state %s differences: ",
             isoConvert(deviceConfig.timestamp), isoConvert(deviceState.timestamp));
         return prefixedDifference(prefix, configPoints, statePoints);
