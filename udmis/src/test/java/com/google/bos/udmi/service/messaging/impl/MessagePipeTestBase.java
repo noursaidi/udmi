@@ -24,7 +24,6 @@ public abstract class MessagePipeTestBase extends MessageTestBase {
 
   private static final long RECEIVE_TIMEOUT_MS = 1000;
   private static final String EXCEPTION_PAYLOAD = "";
-  public static String useRegistry = TEST_REGISTRY;
 
   /**
    * Get a dispatcher for the given configuration.
@@ -42,7 +41,7 @@ public abstract class MessagePipeTestBase extends MessageTestBase {
   public static Envelope makeTestEnvelope() {
     Envelope envelope = new Envelope();
     envelope.deviceId = TEST_DEVICE;
-    envelope.deviceRegistryId = useRegistry;
+    envelope.deviceRegistryId = TEST_REGISTRY;
     envelope.projectId = TEST_NAMESPACE;
     return envelope;
   }

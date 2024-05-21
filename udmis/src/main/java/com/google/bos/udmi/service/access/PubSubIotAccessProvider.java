@@ -8,8 +8,8 @@ import static com.google.udmi.util.Common.CONFIG_CATEGORY;
 import static com.google.udmi.util.Common.DEVICE_ID_KEY;
 import static com.google.udmi.util.Common.REGISTRY_ID_PROPERTY_KEY;
 import static com.google.udmi.util.Common.SUBFOLDER_PROPERTY_KEY;
+import static com.google.udmi.util.GeneralUtils.ifNotNullGet;
 import static com.google.udmi.util.GeneralUtils.ifNotNullThen;
-import static com.google.udmi.util.GeneralUtils.isNotEmpty;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -43,14 +43,8 @@ public class PubSubIotAccessProvider extends IotAccessBase {
   PubSubIotAccessProvider(IotAccess iotAccess) {
     super(iotAccess);
     projectId = getProjectId(iotAccess);
-    boolean enabled = isNotEmpty(projectId);
-    if (enabled) {
-      topic = requireNonNull(options.get("topic"), "topic option not supplied");
-      publisher = getPublisher(topic);
-    } else {
-      topic = null;
-      publisher = null;
-    }
+    topic = requireNonNull((String) options.get("topic"), "topic option not supplied");
+    publisher = ifNotNullGet(topic, this::getPublisher);
   }
 
   @Override
@@ -133,7 +127,12 @@ public class PubSubIotAccessProvider extends IotAccessBase {
   }
 
   @Override
-  public CloudModel modelResource(String deviceRegistryId, String deviceId, CloudModel cloudModel) {
+  public CloudModel modelDevice(String deviceRegistryId, String deviceId, CloudModel cloudModel) {
+    throw new RuntimeException("modelDevice not implemented for PubSub");
+  }
+
+  @Override
+  public CloudModel modelRegistry(String deviceRegistryId, String deviceId, CloudModel cloudModel) {
     throw new RuntimeException("modelDevice not implemented for PubSub");
   }
 

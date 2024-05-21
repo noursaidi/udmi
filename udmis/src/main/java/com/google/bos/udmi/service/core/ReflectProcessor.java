@@ -62,13 +62,12 @@ public class ReflectProcessor extends ProcessorBase {
 
   public static final String PAYLOAD_KEY = "payload";
   private static final Date START_TIME = new Date();
-  static final String UDMI_REFLECT = "UDMI-REFLECT";
 
   public ReflectProcessor(EndpointConfiguration config) {
     super(config);
   }
 
-  public static String makeTransactionId() {
+  private static String makeTransactionId() {
     return format("RP:%08x", Objects.hash(System.currentTimeMillis(), Thread.currentThread()));
   }
 
@@ -78,12 +77,10 @@ public class ReflectProcessor extends ProcessorBase {
     Envelope reflection = continuation.getEnvelope();
     Map<String, Object> objectMap = toMap(message);
     try {
-      boolean isCommand = objectMap.containsKey(PAYLOAD_KEY);
-      if (reflection.subFolder == null && !isCommand) {
+      if (reflection.subFolder == null) {
         reflectStateHandler(reflection, extractUdmiState(message));
-      } else if (reflection.subFolder != SubFolder.UDMI && reflection.subType != SubType.REFLECT) {
-        throw new IllegalStateException(format("Neither type %s nor folder %s is udmi",
-            reflection.subType, reflection.subFolder));
+      } else if (reflection.subFolder != SubFolder.UDMI) {
+        throw new IllegalStateException("Unexpected reflect subfolder " + reflection.subFolder);
       } else if (message instanceof UdmiState distributedUpdate) {
         updateAwareness(reflection, distributedUpdate);
       } else {
@@ -107,6 +104,13 @@ public class ReflectProcessor extends ProcessorBase {
       return false;
     }
     return lastConfig.after(START_TIME) && !lastConfigAck.before(lastConfig);
+  }
+
+  private ModelUpdate extractDeviceModel(CloudModel request) {
+    return ifNotNullGet(request.metadata,
+        metadata -> ofNullable(metadata.get(MetadataMapKeys.UDMI_METADATA))
+            .map(ReflectProcessor::asModelUpdate)
+            .orElse(null));
   }
 
   private ModelUpdate extractDeviceModel(CloudModel request) {
@@ -215,8 +219,14 @@ public class ReflectProcessor extends ProcessorBase {
   }
 
   private CloudModel reflectModel(Envelope attributes, CloudModel request) {
+    // Reflect the update ,,
     ifNotNullThen(extractDeviceModel(request), model -> publish(attributes, model));
-    return iotAccess.modelResource(attributes.deviceRegistryId, attributes.deviceId, request);
+    switch(request.resource_type){
+      case DEVICE:
+
+    }
+      ifNotNullThen(extractDeviceModel(request), model -> publish(attributes, model));
+    return iotAccess.modelDevice(attributes.deviceRegistryId, attributes.deviceId, request);
   }
 
   private static ModelUpdate asModelUpdate(String modelString) {

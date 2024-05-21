@@ -32,5 +32,5 @@ public interface IotDataProvider extends UdmiComponent {
     }
   }
 
-  DataRef ref();
+  String getSystemEntry(String regionsKey);
 }
