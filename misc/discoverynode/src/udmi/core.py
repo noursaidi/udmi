@@ -107,6 +107,21 @@ class UDMI:
         self.state, self.publish_discovery
     )
 
+<<<<<<< HEAD
+=======
+    bacnet_discovery = udmi.discovery.bacnet.GlobalBacnetDiscovery(
+        self.state,
+        self.publish_discovery,
+        #bacnet_ip=self.config["bacnet"]["ip"],
+        bacnet_ip=None,
+    )
+    nmap_banner_scan = udmi.discovery.nmap.NmapBannerScan(
+        self.state,
+        self.publish_discovery,
+        target_ips=self.config["nmap"]["targets"],
+    )
+
+>>>>>>> 82d5a00d (wip)
     self.add_config_route(
         lambda x: number_discovery.scan_family
         in x.get("discovery", {}).get("families", {}),

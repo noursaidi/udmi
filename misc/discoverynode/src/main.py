@@ -34,7 +34,7 @@ def or_required_from_env(key: str) -> dict[str, str | int | bool]:
 def get_arguments():
   parser = argparse.ArgumentParser(description="Start UDMI Discovey Client")
   parser.add_argument(
-      "config_file",
+      "--config_file",
       type=str,
       help="path to config file"
   )
