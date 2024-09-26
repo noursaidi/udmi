@@ -51,7 +51,9 @@ class DiscoveryEvent:
   def to_json(self) -> str:
     as_dict = dataclasses.asdict(self)
     as_dict["timestamp"] = datetime.datetime.now()
-    as_dict = udmi.schema.util.deep_remove(
+    
+    for _ in range(3):
+      as_dict = udmi.schema.util.deep_remove(
         copy.deepcopy(as_dict), None, [{}, None]
     )
     return json.dumps(

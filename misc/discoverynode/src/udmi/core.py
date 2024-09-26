@@ -20,6 +20,7 @@ class UDMI:
   """UDMI Client."""
 
   STATE_TOPIC_TEMPLATE = "{}/state"
+  EVENT_POINTSET_TOPIC_TEMPLATE = "{}/events/pointset"
   EVENT_DISCOVERY_TOPIC_TEMPLATE = "{}/events/discovery"
   EVENT_SYSTEM_TOPIC_TEMPLATE = "{}/events/system"
   _state_monitor_interval = 1  # [s]
@@ -99,7 +100,7 @@ class UDMI:
 
   def publish_discovery(self, payload):
     logging.warning("published discovery: %s", payload.to_json())
-    self.publisher.publish_message(self.topic_discovery, payload.to_json())
+    self.publisher.publish_message(self.topic_discovery_event, payload.to_json())
 
   def enable_discovery(self):
 
