@@ -30,7 +30,7 @@ class NumberDiscovery(discovery.DiscoveryController):
       if self.cancelled:
         return
       result = DiscoveryEvent(
-          generation="generation", scan_family=self.scan_family, scan_addr=i
+          generation=self.generation, scan_family=self.scan_family, scan_addr=i
       )
       self.publisher(result)
       time.sleep(1)

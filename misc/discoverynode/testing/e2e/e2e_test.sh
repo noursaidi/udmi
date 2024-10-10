@@ -1,5 +1,6 @@
-#!/bin/bash 
-set -o xtrace
+#!/bin/bash -e
+set -o xtrace 
+
 
 ROOT_DIR=$(dirname $(realpath $0))
 DEVICE_CONFIGS=$ROOT_DIR/docker_config.json
@@ -39,7 +40,7 @@ docker run -d --rm\
   --mount type=bind,source=$ROOT_DIR/docker_config.json,target=/usr/src/app/docker_config.json \
   --mount type=bind,source=$ROOT_DIR/config.toml,target=/usr/src/app/config.toml \
   --mount type=bind,source=$ROOT_DIR/ec_private.pem,target=/usr/src/app/ec_private.pem \
-  test-discovery_node python3 main.py --config_file=config.toml || error=1
+  test-discovery_node python3 main.py --config_file=config.toml
 
 site_path=sites/udmi_site_model
 project_spec=//gbos/bos-platform-dev
@@ -62,7 +63,6 @@ sleep 20
 
 echo Extracting results at $(date -u -Is)
 bin/registrar $site_path $project_spec
-
 
 
 docker logs discoverynode-test-node > node.logs

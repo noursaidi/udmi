@@ -1,7 +1,5 @@
-misc/discoverynode/testing/integration/integration_test.sh misc/discoverynode/testing/integration/docker_config.json# pylint: skip-file
-# because this is an old partial file
-
 from collections.abc import Callable
+import contextlib
 import copy
 import datetime
 import glob
@@ -20,126 +18,24 @@ import sys
 import time
 import time
 from typing import Any
+from typing import Any
 from typing import Iterator
-import contextlib
+import textwrap
 
 import pytest
 
-KEYS_TO_REDACT = ["timestamp", "version", "operation"]
-REDACTED_VALUE = "redacted"
 
+# Global vars
 SITE_PATH = os.getenv("SITE_PATH") if os.getenv("SITE_PATH") else "."
 
-
+"""
 devices_list = [
     x.parent.stem
     for x in Path(SITE_PATH).glob(
         os.path.join("udmi/devices/*/rsa_private.pem")
     )
 ]
-
-
-class MqttClient:
-  algorithm = "RS256"
-  mqtt_bridge_port = 443
-  mqtt_bridge_hostname = "mqtt.bos.goog"
-  jwt_exp_mins = 20
-  puback_regex = r"^Received PUBACK \(Mid: (\d+)\)"
-  topic_regex = r"^/devices/(.*)/config"
-
-  def __init__(self, site_path, project_id, device_id):
-    self.pubacks = []
-    self.device_id = device_id
-    self.project_id = project_id
-    self.private_key_file = os.path.join(
-        site_path, "devices", device_id, "rsa_private.pem"
-    )
-
-    with open(
-        os.path.join(site_path, "cloud_iot_config.json"), encoding="utf-8"
-    ) as f:
-      cloud_iot_config = json.load(f)
-
-    self.registry_id = cloud_iot_config.get("registry_id")
-    self.cloud_region = cloud_iot_config.get("cloud_region")
-
-    self.configs = {}
-
-    self.client = self.start_client()
-
-  def subscribe_proxy_config(self, proxy_id):
-    self.client.subscribe(f"/devices/{proxy_id}/config", qos=1)
-
-  def attach_device(self, device_id) -> int:
-    """Returns mid"""
-    attach_topic = f"/devices/{device_id}/attach"
-    attach_payload = '{{"authorization" : "{}"}}'
-    result = self.client.publish(attach_topic, attach_payload, qos=1)
-    return result.mid
-
-  def config(self, device_id):
-    return self.configs.get(device_id, None)
-
-  def puback(self, mid):
-    print(self.pubacks)
-    return mid in self.pubacks
-
-  def start_client(self):
-
-    client_id = "projects/{}/locationss/{}/registries/{}/devices/{}".format(
-        self.project_id, self.cloud_region, self.registry_id, self.device_id
-    )
-
-    client = mqtt.Client(client_id=client_id, clean_session=False)
-    client.username_pw_set(username="unused", password=self.create_jwt())
-    client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
-    client.on_connect = self.on_connect
-    client.on_disconnect = self.on_disconnect
-    client.on_message = self.on_message
-    client.on_log = self.on_log
-
-    client.connect(
-        self.mqtt_bridge_hostname, self.mqtt_bridge_port, keepalive=60
-    )
-
-    client.subscribe(f"/devices/{self.device_id}/config", qos=1)
-    client.subscribe(f"/devices/{self.device_id}/errors", qos=0)
-    return client
-
-  def create_jwt(self):
-    self.jwt_iat = datetime.datetime.now(tz=datetime.timezone.utc)
-    token = {
-        "iat": self.jwt_iat,
-        "exp": datetime.datetime.now(
-            tz=datetime.timezone.utc
-        ) + datetime.timedelta(minutes=self.jwt_exp_mins),
-        "aud": self.project_id,
-    }
-    with open(self.private_key_file, "r") as f:
-      private_key = f.read()
-    return jwt.encode(token, private_key, algorithm=self.algorithm)
-
-  def on_log(self, client, ud, level, buf):
-    m = re.match(self.puback_regex, buf)
-    if m:
-      self.pubacks.append(int(m.group(1)))
-
-  def on_connect(self, client, ud, flag, rc):
-    print(f"on_connect {mqtt.connack_string(rc)}")
-    assert rc == 0, mqtt.connack_string(rc)
-
-  def on_disconnect(self, client, userdata, rc):
-    print(f"on_disconnect {mqtt.error_string(rc)}")
-
-  def on_message(self, client, userdata, message):
-    print(f"receieved {message.topic}")
-    print(message.payload.decode("utf-8"))
-    if "error" in message.topic:
-      raise Exception(message.payload.decode("utf-8"))
-
-    m = re.match(self.topic_regex, message.topic)
-    if m:
-      self.configs[m.group(1)] = json.loads(message.payload.decode("utf-8"))
+"""
 
 
 def until_true(func: Callable, message: str, **kwargs):
@@ -161,8 +57,8 @@ def until_true(func: Callable, message: str, **kwargs):
   raise Exception(f"Timed out waiting {timeout}s for {message}")
 
 
-def dict_paths(thing: dict, stem: str = "") -> Iterator[str]:
-  """Returns json paths (in dot notation) from a given dictionary"""
+def dict_paths(thing: dict[str:Any], stem: str = "") -> Iterator[str]:
+  """Returns json paths (in dot notation) from a given dictionary."""
   for k, v in thing.items():
     path = f"{stem}.{k}" if stem else k
     if isinstance(v, dict):
@@ -171,7 +67,8 @@ def dict_paths(thing: dict, stem: str = "") -> Iterator[str]:
       yield path
 
 
-def normalize_keys(target, replacement, *args):
+def normalize_keys(target: dict[Any:Any], replacement, *args):
+  """Replaces value of given keys in a nested dictionary with given replacement."""
   for k, v in target.items():
     if k in args:
       target[k] = replacement
@@ -180,7 +77,8 @@ def normalize_keys(target, replacement, *args):
   return target
 
 
-def run(cmd: str) -> str:
+def run(cmd: str) -> subprocess.CompletedProcess:
+  """Runs the given shell commnd and wait for it to complete"""
   return subprocess.run(cmd, shell=True, capture_output=True, cwd=SITE_PATH)
 
 
@@ -195,65 +93,205 @@ def is_registrar_done() -> bool:
     # currently file is empty at start, and only written to at the end
     return history_files[0].stat().st_size > 0
 
+@pytest.fixture
+def docker_devices():
+  def _docker_devices(*args,  **kwargs):
+    return
+
+  yield docker_devices
 
 @pytest.fixture
-def random_size_site_model():
-  devices_count = random.randint(1, 40)
-  device_prefix = "AHU"
-  base_device = f"{device_prefix}-1"
+def discovery_node():
+  def _discovery_node(*args,  **kwargs):
+    return
 
-  metadata_path = os.path.join(
-      SITE_PATH, "udmi/devices", base_device, "metadata.json"
+  return _discovery_node
+
+
+def test_e2e(prereqs, new_site_model, docker_devices, discovery_node):
+
+  new_site_model(
+      path="./site_model",
+      name="ZZ-TRI-FECTA",
+      number_of_devices=5,
+      devices_with_localnet_block=range(1, 50),
+      discovery_node_id="GAT-1",
+      discovery_node_is_gateway=True,
+      discovery_node_key_path=".",
+      discovery_node_families=["bacnet"],
   )
-  public_key_file_path = os.path.join(
-      SITE_PATH, "udmi/devices", base_device, "rsa_public.pem"
-  )
-  private_key_file_path = os.path.join(
-      SITE_PATH, "udmi/devices", base_device, "rsa_private.pem"
-  )
 
-  with open(metadata_path, encoding="utf-8") as f:
-    base_metadata = json.load(f)
+  docker_devices(devices=range(1, 10))
 
-  print(base_metadata)
+  run("bin/registrar -x SITEPATH PROJECTREF")
 
-  desired_devices = [f"{device_prefix}-{i}" for i in range(2, devices_count)]
+  # Note: After running registrar
+  discovery_node(key=..., project_id=..., device_id=...)
 
-  existing_devices = [os.stem for x in Path(SITE_PATH).glob("udmi/devices/*")]
-  for existing_device in existing_devices:
-    if existing_device != base_device:
-      shutil.rmtree(os.path.join(SITE_PATH, "udmi/devices", existing_device))
+  run("bin/mapper $DEVICEID provision")
 
-  for device_id in desired_devices:
+  time.sleep(5)
 
-    device_path = os.path.join(SITE_PATH, "udmi/devices", device_id)
-    metadata = normalize_keys(copy.copy(base_metadata), device_id, "name")
-    print(metadata)
+  run("bin/mapper $DEVICEID discover")
 
-    os.mkdir(device_path)
+  time.sleep(30)
+
+
+@pytest.fixture
+def new_site_model():
+
+  def _new_site_model(
+      *,
+      path,
+      name,
+      number_of_devices,
+      devices_with_localnet,
+      discovery_node_id,
+      discovery_node_is_gateway,
+      discovery_node_key_path,
+      discovery_node_families,
+  ):
+
+    device_prefix = "DDC"
+    
+    os.mkdir(path)
+
+    cloud_iot_config = {
+      "cloud_region": "us-central1",
+      "site_name": name,
+      "registry_id": name
+    }
 
     with open(
-        os.path.join(device_path, "metadata.json"), mode="w", encoding="utf-8"
+        os.path.join(path, "cloud_iot_config.json"), mode="w", encoding="utf-8"
     ) as f:
-      json.dump(metadata, f)
+        json.dump(cloud_iot_config, f)
 
-    shutil.copy(
-        public_key_file_path, os.path.join(device_path, "rsa_public.pem")
-    )
-    shutil.copy(
-        private_key_file_path, os.path.join(device_path, "rsa_private.pem")
-    )
-  yield
+    os.mkdir(os.path.join(path, "devices"))
+
+    ##########################
+
+    # Create gateway
+    os.mkdir(os.path.join(path, "devices", discovery_node_id))
+    gateway_metadata = {
+      "system": {
+        "location": {
+          "section": "2-3N8C"
+        },
+        "physical_tag": {
+          "asset": {
+            "guid": "drw://TBB",
+            "site": "ZZ-TRI-FECTA",
+            "name": "GAT-123"
+          }
+        }
+      },
+      "discovery": {
+        "families": { }
+      },
+      "cloud": {
+        "auth_type": "RS256"
+      },
+      "version": "1.5.1",
+      "timestamp": "2020-05-01T13:39:07Z"
+    }
+
+    for family in discovery_node_families:
+      gateway_metadata["discovery"]["families"][family] = {}
+    
+    if discovery_node_is_gateway:
+      gateway_metadata["gateway"] = {"proxy_ids": []}
+    
+    gateway_path = os.path.join(path, "devices", discovery_node_id)
+    
+    with open(
+        os.path.join(gateway_path, "metadata.json"), mode="w", encoding="utf-8"
+    ) as f:
+        json.dump(gateway_metadata, f)
+
+    shutil.copyfile(os.path.join(discovery_node_key_path, "rsa_private.pem"), os.path.join(gateway_path, "rsa_private.pem"))
+
+    ##############################
+
+    base_device_public_key = textwrap.dedent("""
+          ----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvpaY1jwJWa3yQy5DKomL
+          qYjuTeUekS1OSZxVFr5RclgsWJBTph+7Myfp9dCVpYCR6am4ycRWayp9DqmhSP6q
+          9B4VIUDjV/PBuLvqrfL5XhVZUyMNcg1WlehfdsZWLzG5X5gGfGri7LqvmYIz3eHz
+          yxkUV5t0sRhuZFk5wT2PrD7MWtjAIfEJmA6dZ5o/Jix3bF4wMsvFBK9XDRHibcS7
+          o/3hw/1FABL+Bgw4L41CtrzRLYKmmRTvsIT8jXuUuptsf+58b9A1kWWsV0AIKjaJ
+          73fh+iR8TBe5FDc8MwSgjgophYXBVCgzlIOkX7gwIiAYQWbWOFU9ltzIMgp7JsdR
+          vwIDAQAB
+          -----END PUBLIC KEY-----
+    """).strip()
+
+    base_device_metadata = {
+        "system": {
+          "location": {
+            "section": "2-3N8C"
+          },
+          "physical_tag": {
+            "asset": {
+              "guid": "drw://TBB",
+              "site": "ZZ-TRI-FECTA",
+              "name": "GAT-123"
+            }
+          }
+        },
+        "cloud": {
+          "auth_type": "RS256"
+        },
+        "version": "1.5.1",
+        "timestamp": "2020-05-01T13:39:07Z"
+    }
+
+    for i in range(1, number_of_devices):
+      device_id = f"{device_prefix}-{i}"
+      device_path = os.path.join(path, "devices", device_id)
+      os.mkdir(device_path)
+      
+      device_metadata = copy.copy(base_device_metadata)
+
+      if i in devices_with_localnet:
+        device_metadata["localnet"] = localnet_block_from_id(i)
+
+
+      with open(
+          os.path.join(device_path, "metadata.json"), mode="w", encoding="utf-8"
+      ) as f:
+        json.dump(device_metadata, f)
+
+      with open(
+          os.path.join(device_path, "rsa_public.pem"), mode="w", encoding="utf-8"
+      ) as f:
+        f.write(base_device_public_key)
+      
+
+  yield _new_site_model
+
+
+
+
+def localnet_block_from_id(id: int):
+  """Generates localnet block f"""
+  if id > 250:
+    # because IP allocation and mac address assignment
+    raise RuntimeError("more than 250 devices not supported")
+
+  return {
+      "ipv4": {"addr": f"123.123.123.{id}"},
+      "ethmac": {"addr": f"00:00:aa:bb:cc:{id:02x}"},
+      "bacnet": {"addr": str(3000 + id)},
+  }
 
 
 def git_flow():
   run("git pull")
   run(f"bin/registrar {PATH}")
   # delete history for ease of tracking
-  
+
   with contextlib.suppress(FileNotFoundError):
     shutil.rmtree(os.path.join(SITE_PATH, "udmi/history/"))
-
 
   Path(os.path.join(SITE_PATH, "run-registrar")).touch()
 
@@ -275,95 +313,3 @@ def gateway_site_model():
       f"GAT-{i}": [f"{proxy_id(i)}-{x}" for x in range(1, random.randint(2, 5))]
       for i in range(1, random.randint(2, 5))
   }
-
-#siteModel
-def test_extra_device
-
-def test_git():
-  git_flow()
-
-
-def test_random_site_model(random_size_site_model):
-  git_flow()
-
-
-def test_random_gateway(random_size_site_model):
-  git_flow()
-
-
-@pytest.mark.parametrize("device_id", devices_list)
-def test_device(device_id):
-  site_path = os.path.join(SITE_PATH, "udmi/")
-  project_id = "bos-platform-prod"
-
-  with open(
-      os.path.join(
-          site_path, "devices", device_id, "out/generated_config.json"
-      ),
-      encoding="utf-8",
-  ) as f:
-    expected_config = json.load(f)
-
-  device = MqttClient(site_path, project_id, device_id)
-
-  until_true(
-      lambda: device.config(device_id) is not None,
-      "device recieved config",
-      do=lambda: device.client.loop(),
-      timeout=5,
-  )
-
-  config = copy.deepcopy(device.config(device_id))
-
-  # timestamp and version gets set by the cloud so normalise these
-  # 'operation' because new?
-  normalized_config = normalize_keys(config, REDACTED_VALUE, *KEYS_TO_REDACT)
-  normalized_expected = normalize_keys(
-      expected_config, REDACTED_VALUE, *KEYS_TO_REDACT
-  )
-
-  assert normalized_config == normalized_expected
-
-  metadata_path = os.path.join(site_path, "devices", device_id, "metadata.json")
-
-  with open(metadata_path, encoding="utf-8") as f:
-    metadata = json.load(f)
-
-  proxy_ids = metadata.get("gateway", {}).get("proxy_ids", [])
-  for proxy_id in proxy_ids:
-    mid = device.attach_device(proxy_id)
-    print(mid)
-    until_true(
-        lambda: device.puback(mid),
-        f"puback for attach {proxy_id}",
-        do=lambda: device.client.loop(),
-        timeout=5,
-    )
-
-    device.subscribe_proxy_config(proxy_id)
-    until_true(
-        lambda: device.config(proxy_id) is not None,
-        f"device {device_id} recieved config",
-        do=lambda: device.client.loop(),
-        timeout=5,
-    )
-
-    with open(
-        os.path.join(
-            site_path, "devices", proxy_id, "out/generated_config.json"
-        ),
-        encoding="utf-8",
-    ) as f:
-      expected_config = json.load(f)
-    config = copy.deepcopy(device.config(proxy_id))
-
-    # timestamp and version gets set by the cloud so normalise these
-    # operation because last_start, new, etc
-    normalized_config = normalize_keys(config, REDACTED_VALUE, *KEYS_TO_REDACT)
-    normalized_expected = normalize_keys(
-        expected_config, REDACTED_VALUE, *KEYS_TO_REDACT
-    )
-    print(normalized_config)
-    print(normalized_expected)
-
-    assert normalized_config == normalized_expected

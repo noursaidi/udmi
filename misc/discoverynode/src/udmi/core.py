@@ -2,6 +2,8 @@ import json
 import logging
 import threading
 import time
+import textwrap
+
 from typing import Any, Callable
 
 import udmi.discovery
@@ -65,7 +67,8 @@ class UDMI:
 
     try:
       config = json.loads(config_string)
-      logging.info("received config %s", config["timestamp"])
+      logging.info("received config %s: \n%s", config["timestamp"], textwrap.indent(config_string, "\t\t\t"))
+  
     except json.JSONDecodeError as err:
       self.status_from_exception(err)
       return
@@ -99,7 +102,7 @@ class UDMI:
     self.publisher.publish_message(self.topic_state, state)
 
   def publish_discovery(self, payload):
-    logging.warning("published discovery: %s", payload.to_json())
+    logging.debug("published discovery: %s", payload.to_json())
     self.publisher.publish_message(self.topic_discovery_event, payload.to_json())
 
   def enable_discovery(self):
@@ -108,39 +111,22 @@ class UDMI:
         self.state, self.publish_discovery
     )
 
-<<<<<<< HEAD
-=======
-    bacnet_discovery = udmi.discovery.bacnet.GlobalBacnetDiscovery(
-        self.state,
-        self.publish_discovery,
-        #bacnet_ip=self.config["bacnet"]["ip"],
-        bacnet_ip=None,
-    )
-    nmap_banner_scan = udmi.discovery.nmap.NmapBannerScan(
-        self.state,
-        self.publish_discovery,
-        target_ips=self.config["nmap"]["targets"],
-    )
-
->>>>>>> 82d5a00d (wip)
     self.add_config_route(
-        lambda x: number_discovery.scan_family
-        in x.get("discovery", {}).get("families", {}),
+        lambda x: True,
         number_discovery,
     )
 
     self.components["number_discovery"] = number_discovery
-
     
+    return
     bacnet_discovery = udmi.discovery.bacnet.GlobalBacnetDiscovery(
         self.state,
         self.publish_discovery,
-        bacnet_ip=self.config["bacnet"]["ip"],
+        bacnet_ip=self.config.get("bacnet", {}).get("ip"),
     )
 
     self.add_config_route(
-        lambda x: bacnet_discovery.scan_family
-        in x.get("discovery", {}).get("families", {}),
+        lambda x: True,
         bacnet_discovery,
     )
 
@@ -156,8 +142,7 @@ class UDMI:
 
   
     self.add_config_route(
-        lambda x: passive_discovery.scan_family
-        in x.get("discovery", {}).get("families", {}),
+        lambda x: True,
         passive_discovery,
     )
 

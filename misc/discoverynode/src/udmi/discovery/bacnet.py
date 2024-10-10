@@ -25,7 +25,7 @@ BAC0.log_level("silence")
 class GlobalBacnetDiscovery(discovery.DiscoveryController):
   """Passive Network Discovery."""
 
-  scan_family = "vendor"
+  scan_family = "bacnet"
 
   def __init__(
       self,

@@ -1,6 +1,7 @@
 """Framework class for"""
 
 import abc
+import dataclasses
 import atexit
 import enum
 from functools import wraps
@@ -10,7 +11,9 @@ import threading
 import traceback
 from typing import Any, Callable
 import udmi.schema.config
+import udmi.schema.discovery_event
 import udmi.schema.state
+import udmi.schema.util
 import time
 import copy
 import datetime
@@ -46,7 +49,8 @@ def main_task(method: Callable):
   @wraps(method)
   def _impl(self, *args, **kwargs):
     method(self, *args, **kwargs)
-    self.state.phase = states.FINISHED
+    self.set_internal_state(states.FINISHED)
+    self.state.phase = udmi.schema.state.Phase.done
 
   return _impl
 
@@ -123,17 +127,16 @@ class DiscoveryController(abc.ABC):
     """
     pass
 
-  # Generation, provided by external source
-  generation: None | str = None
-
   def __init__(self, state: udmi.schema.state.State, publisher: Callable):
     self.state = udmi.schema.state.Discovery()
+    self.internal_state = None
     self.publisher = publisher
     state.discovery.families[self.scan_family] = self.state
     self.config = None
     self.mutex = threading.Lock()
     self.scheduler_thread = None
     self.scheduler_thread_stopped = threading.Event()
+    self.generation = None
     atexit.register(self._stop)
 
   def _status_from_exception(self, err: Exception) -> None:
@@ -144,33 +147,37 @@ class DiscoveryController(abc.ABC):
 
   def mark_error_from_exception(self, err: Exception) -> None:
     """Helper function to mark"""
-    self.state.phase = states.ERROR
+    self.set_internal_state(states.ERROR)
     self._status_from_exception(err)
     logging.exception(err)
 
   def _start(self):
     logging.info("Starting discovery for %s", type(self).__name__)
     self.state.status = None
-    self.state.phase = states.STARTING
+    self.set_internal_state(states.STARTING)
+    self.generation = datetime.datetime.now()
+    self.state.generation = self.generation
     try:
       self.start_discovery()
-      self.state.phase = states.STARTED
+      self.set_internal_state(states.STARTED)
+      self.state.phase = udmi.schema.state.Phase.active
     except Exception as err:
       self.mark_error_from_exception(err)
     logging.info("Started... %s", type(self).__name__)
 
   def _stop(self):
     logging.info("Stopping discovery for %s", type(self).__name__)
-    if self.state.phase not in [states.STARTING, states.STARTED]:
-      logging.info("Not stopping because state was %s", self.state.phase)
+    if self.internal_state not in [states.STARTING, states.STARTED]:
+      logging.info("Not stopping because state was %s", self.internal_state)
       return
     logging.info("Stopped %s", type(self).__name__)
 
     self.state.status = None
-    self.state.phase = states.CANCELLING
+    self.set_internal_state(states.CANCELLING)
     try:
       self.stop_discovery()
-      self.state.phase = states.CANCELLED
+      self.state.phase = udmi.schema.state.Phase.stopped
+      self.set_internal_state(states.CANCELLED)
     except Exception as err:
       self.mark_error_from_exception(err)
 
@@ -190,7 +197,11 @@ class DiscoveryController(abc.ABC):
     
     # Initial execution of the scheduler is always to start a discovery
     next_action = ACTION_START
-    self.state.phase = states.SCHEDULED
+
+    self.set_internal_state(states.SCHEDULED)
+    self.state.phase = udmi.schema.state.Phase.pending
+    # initial generation is from 
+    self.state.generation = config.generation
 
 
     scan_interval_sec = config.scan_interval_sec if config.scan_interval_sec is not None else 0
@@ -230,13 +241,15 @@ class DiscoveryController(abc.ABC):
               sleep_interval = scan_interval_sec - scan_duration_sec
               next_action_time = time.monotonic() + sleep_interval
               logging.info("scheduled discovery start for %s in %d seconds", type(self).__name__, scan_duration_sec)
-              self.state.phase = states.SCHEDULED
+              self.set_internal_state(states.SCHEDULED)
+              self.state.phase = udmi.schema.state.Phase.pending
             else:
               # The scan is not repetitive, exit the scheduler
               return
           
       time.sleep(RUNNER_LOOP_INTERVAL)
-    
+
+
   @catch_exceptions_to_state
   def controller(self, config_dict: None | dict[str:Any]):
     """Main discovery controller which manages discovery sub-class.
@@ -246,10 +259,15 @@ class DiscoveryController(abc.ABC):
     """
     logging.info("received config")
     with self.mutex:
-      discovery_config_dict = config_dict["discovery"]["families"].get(
-          self.scan_family
-      )
-
+      try:
+        discovery_config_dict = config_dict["discovery"]["families"][self.scan_family]
+      except KeyError:
+        self._stop()
+        self.set_internal_state(None)
+        self.config = None
+        self.reset_udmi_state()
+        return
+     
       # Create a new config dict (always new)
       config = (
           udmi.schema.config.DiscoveryFamily(**discovery_config_dict)
@@ -262,7 +280,7 @@ class DiscoveryController(abc.ABC):
         return
 
       # config has changed
-      # Stop any running discovery
+      # Stop any running discovery and scheduled discovery
       self.config = config
       self._stop()
       
@@ -275,13 +293,13 @@ class DiscoveryController(abc.ABC):
       if not config:
         return
       
-
+      self.reset_udmi_state()
       generation = datetime.datetime.strptime(f"{config.generation}+0000", "%Y-%m-%dT%H:%M:%SZ%z")
       time_delta_from_now = generation - datetime.datetime.now(tz=datetime.timezone.utc)
       seconds_from_now = time_delta_from_now.total_seconds()
 
       if seconds_from_now < MAX_THRESHOLD_GENERATION:
-        raise RuntimeError(f"generation start time ({seconds_from_now} from now exceeds allowable threshold {self.MAX_THRESHOLD_GENERATION})")
+        raise RuntimeError(f"generation start time ({seconds_from_now} from now exceeds allowable threshold {MAX_THRESHOLD_GENERATION})")
       logging.info(f"discovery {config} starts in {seconds_from_now} seconds")
 
       self.scheduler_thread_stopped.clear()
@@ -291,4 +309,12 @@ class DiscoveryController(abc.ABC):
       self.scheduler_thread.start()
 
   def done(self):
-    self.state.phase = states.FINISHED
+    self.set_internal_state(states.FINISHED)
+
+  def set_internal_state(self, new_state: states):
+    logging.info("state now %s, was %s", new_state, self.internal_state)
+    self.internal_state = new_state
+
+  def reset_udmi_state(self):
+    for field in dataclasses.fields(self.state):
+      setattr(self.state, field.name, None)
