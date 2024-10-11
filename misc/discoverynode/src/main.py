@@ -4,7 +4,7 @@ import argparse
 import logging
 import sys
 import time
-import tomllib
+import json
 import warnings
 import os
 # filter deprecation notice from SCAPY import
@@ -43,7 +43,7 @@ def get_arguments():
 
 def load_config_from_file(file_name: str):
   with open(file_name, "rb") as f:
-    return tomllib.load(f)
+    return json.load(f)
 
 
 def main():

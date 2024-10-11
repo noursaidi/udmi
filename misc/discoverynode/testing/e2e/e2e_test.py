@@ -21,12 +21,16 @@ from typing import Any
 from typing import Any
 from typing import Iterator
 import textwrap
+import shlex
+from logging import info, warning, error
 
 import pytest
 
+ROOT_DIR = os.path.dirname(__file__)
+UDMI_DIR = str(Path(__file__).parents[4])
 
-# Global vars
-SITE_PATH = os.getenv("SITE_PATH") if os.getenv("SITE_PATH") else "."
+# Assume the UDMI Directory is the UDMI directory and has not moved
+assert UDMI_DIR.rsplit("/", 1)[1] == "udmi"
 
 """
 devices_list = [
@@ -77,10 +81,28 @@ def normalize_keys(target: dict[Any:Any], replacement, *args):
   return target
 
 
-def run(cmd: str) -> subprocess.CompletedProcess:
-  """Runs the given shell commnd and wait for it to complete"""
-  return subprocess.run(cmd, shell=True, capture_output=True, cwd=SITE_PATH)
 
+
+def localnet_block_from_id(id: int):
+  """Generates localnet block f"""
+  if id > 250:
+    # because IP allocation and mac address assignment
+    raise RuntimeError("more than 250 devices not supported")
+
+  return {
+      "ipv4": {"addr": f"123.123.123.{id}"},
+      "ethmac": {"addr": f"00:00:aa:bb:cc:{id:02x}"},
+      "bacnet": {"addr": str(3000 + id)},
+  }
+
+
+
+def run(cmd: str) -> subprocess.CompletedProcess:
+  """Runs the given command inside the UDMI directory and wait for it to complete"""
+  # stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+  info(cmd)
+  result = subprocess.run(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr, cwd=UDMI_DIR)
+  return result
 
 def is_registrar_done() -> bool:
   run("git pull")
@@ -95,23 +117,70 @@ def is_registrar_done() -> bool:
 
 @pytest.fixture
 def docker_devices():
-  def _docker_devices(*args,  **kwargs):
-    return
+  def _docker_devices(*, devices):
+    for i in devices:
+      localnet = localnet_block_from_id(i)
+      run(shlex.join([
+          "docker", "run", "--rm", "-d", 
+          f"--name=discoverynode-test-device{i}",
+          f"--network=discoverynode-network",
+          "-e", f"BACNET_ID={localnet['bacnet']['addr']}",
+          "test-bacnet-device"
+      ]))
 
-  yield docker_devices
+  yield _docker_devices
+
+  run("docker ps -a | grep 'discoverynode-test-device' | awk '{print $1}' | xargs docker stop")
 
 @pytest.fixture
 def discovery_node():
-  def _discovery_node(*args,  **kwargs):
-    return
+  
+  def _discovery_node(*, device_id, project_id, registry_id, key_file, algorithm):
+    config = {
+      "mqtt": {
+        "device_id": device_id,
+        "host": "mqtt.bos.goog",
+        "port": 8883,
+        "registry_id": registry_id,
+        "region": "us-central1",
+        "project_id": project_id,
+        "key_file": key_file,
+        "algorithm": algorithm
+      },
+      "nmap":{
+        "targets": ["127.0.0.1"],
+        "interface": "eth0"
+      },
+      "bacnet": {}
+    }
 
-  return _discovery_node
+    with open(
+        os.path.join(ROOT_DIR, "discovery_node_config.json"), mode="w", encoding="utf-8"
+    ) as f:
+        json.dump(config, f, indent=2) 
+
+    run(shlex.join([
+        "docker", "run", "--rm", "-d", 
+        f"--name=discoverynode-test-node",
+        f"--network=discoverynode-network",
+        "--mount", f"type=bind,source={ROOT_DIR}/discovery_node_config.json,target=/usr/src/app/config.json",
+        "--mount", f"type=bind,source={ROOT_DIR}/rsa_private.pem,target=/usr/src/app/rsa_private.pem",
+        "test-discovery_node", "python3",  "main.py", "--config_file=config.json"
+    ]))
 
 
-def test_e2e(prereqs, new_site_model, docker_devices, discovery_node):
+  yield _discovery_node
+  info("logs::::")
+  run("docker logs discoverynode-test-node")
+  run("docker ps -a | grep 'discoverynode-test-node' | awk '{print $1}' | xargs docker stop")
+
+
+def test_e2e(new_site_model, docker_devices, discovery_node):
+  site_path = os.path.join(UDMI_DIR, "sites", "e2e")
 
   new_site_model(
-      path="./site_model",
+      path=site_path,
+      delete=True,
       name="ZZ-TRI-FECTA",
       number_of_devices=5,
       devices_with_localnet_block=range(1, 50),
@@ -123,29 +192,41 @@ def test_e2e(prereqs, new_site_model, docker_devices, discovery_node):
 
   docker_devices(devices=range(1, 10))
 
-  run("bin/registrar -x SITEPATH PROJECTREF")
+  info("deleting existing site model")
+
+  run("bin/registrar sites/e2e //gbos/bos-platform-dev -d")
+
+  run("bin/registrar sites/e2e //gbos/bos-platform-dev ")
 
   # Note: After running registrar
-  discovery_node(key=..., project_id=..., device_id=...)
+  discovery_node(
+    device_id="GAT-1",
+    project_id="bos-platform-dev",
+    registry_id="ZZ-TRI-FECTA",
+    key_file="/usr/src/app/rsa_private.pem",
+    algorithm="RS256"
+  )
 
-  run("bin/mapper $DEVICEID provision")
+  run("bin/mapper GAT-1 provision")
 
   time.sleep(5)
 
-  run("bin/mapper $DEVICEID discover")
+  run("bin/mapper GAT-1 discover")
 
   time.sleep(30)
 
+  run("bin/registrar sites/e2e //gbos/bos-platform-dev")
 
 @pytest.fixture
 def new_site_model():
 
   def _new_site_model(
       *,
+      delete,
       path,
       name,
       number_of_devices,
-      devices_with_localnet,
+      devices_with_localnet_block,
       discovery_node_id,
       discovery_node_is_gateway,
       discovery_node_key_path,
@@ -154,7 +235,19 @@ def new_site_model():
 
     device_prefix = "DDC"
     
+    if delete:
+      with contextlib.suppress(FileNotFoundError):
+        shutil.rmtree(path)
+    
     os.mkdir(path)
+
+    #############
+
+    # Copy reflector from udmi_site_model
+    shutil.copytree(os.path.join(UDMI_DIR, "sites/udmi_site_model/reflector"), os.path.join(path, "reflector"))
+    
+    
+    #############3
 
     cloud_iot_config = {
       "cloud_region": "us-central1",
@@ -165,7 +258,7 @@ def new_site_model():
     with open(
         os.path.join(path, "cloud_iot_config.json"), mode="w", encoding="utf-8"
     ) as f:
-        json.dump(cloud_iot_config, f)
+        json.dump(cloud_iot_config, f, indent=2)
 
     os.mkdir(os.path.join(path, "devices"))
 
@@ -182,7 +275,7 @@ def new_site_model():
           "asset": {
             "guid": "drw://TBB",
             "site": "ZZ-TRI-FECTA",
-            "name": "GAT-123"
+            "name": discovery_node_id
           }
         }
       },
@@ -207,14 +300,14 @@ def new_site_model():
     with open(
         os.path.join(gateway_path, "metadata.json"), mode="w", encoding="utf-8"
     ) as f:
-        json.dump(gateway_metadata, f)
+        json.dump(gateway_metadata, f, indent=2)
 
+    shutil.copyfile(os.path.join(discovery_node_key_path, "rsa_public.pem"), os.path.join(gateway_path, "rsa_public.pem"))
     shutil.copyfile(os.path.join(discovery_node_key_path, "rsa_private.pem"), os.path.join(gateway_path, "rsa_private.pem"))
-
     ##############################
 
     base_device_public_key = textwrap.dedent("""
-          ----BEGIN PUBLIC KEY-----
+          -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvpaY1jwJWa3yQy5DKomL
           qYjuTeUekS1OSZxVFr5RclgsWJBTph+7Myfp9dCVpYCR6am4ycRWayp9DqmhSP6q
           9B4VIUDjV/PBuLvqrfL5XhVZUyMNcg1WlehfdsZWLzG5X5gGfGri7LqvmYIz3eHz
@@ -225,16 +318,22 @@ def new_site_model():
           -----END PUBLIC KEY-----
     """).strip()
 
-    base_device_metadata = {
+    for i in range(1, number_of_devices):
+      device_id = f"{device_prefix}-{i}"
+      device_path = os.path.join(path, "devices", device_id)
+      os.mkdir(device_path)
+      
+      device_metadata =  {
         "system": {
           "location": {
-            "section": "2-3N8C"
+            "section": "2-3N8C",
+            "site": name
           },
           "physical_tag": {
             "asset": {
               "guid": "drw://TBB",
-              "site": "ZZ-TRI-FECTA",
-              "name": "GAT-123"
+              "site": name,
+              "name": device_id
             }
           }
         },
@@ -245,21 +344,15 @@ def new_site_model():
         "timestamp": "2020-05-01T13:39:07Z"
     }
 
-    for i in range(1, number_of_devices):
-      device_id = f"{device_prefix}-{i}"
-      device_path = os.path.join(path, "devices", device_id)
-      os.mkdir(device_path)
-      
-      device_metadata = copy.copy(base_device_metadata)
-
-      if i in devices_with_localnet:
-        device_metadata["localnet"] = localnet_block_from_id(i)
+      if i in devices_with_localnet_block:
+        device_metadata["localnet"] = {}
+        device_metadata["localnet"]["families"] = localnet_block_from_id(i)
 
 
       with open(
           os.path.join(device_path, "metadata.json"), mode="w", encoding="utf-8"
       ) as f:
-        json.dump(device_metadata, f)
+        json.dump(device_metadata, f, indent=2)
 
       with open(
           os.path.join(device_path, "rsa_public.pem"), mode="w", encoding="utf-8"
@@ -268,40 +361,6 @@ def new_site_model():
       
 
   yield _new_site_model
-
-
-
-
-def localnet_block_from_id(id: int):
-  """Generates localnet block f"""
-  if id > 250:
-    # because IP allocation and mac address assignment
-    raise RuntimeError("more than 250 devices not supported")
-
-  return {
-      "ipv4": {"addr": f"123.123.123.{id}"},
-      "ethmac": {"addr": f"00:00:aa:bb:cc:{id:02x}"},
-      "bacnet": {"addr": str(3000 + id)},
-  }
-
-
-def git_flow():
-  run("git pull")
-  run(f"bin/registrar {PATH}")
-  # delete history for ease of tracking
-
-  with contextlib.suppress(FileNotFoundError):
-    shutil.rmtree(os.path.join(SITE_PATH, "udmi/history/"))
-
-  Path(os.path.join(SITE_PATH, "run-registrar")).touch()
-
-  run(f"git add -A")
-  run(f'git commit -m "run registrar"')
-  run(f"git push -o nokeycheck")
-
-  # wait until registrar is complete
-  until_true(is_registrar_done, "registrar to complete", timeout=3600)
-
 
 def proxy_id(x: int) -> str:
   return "".join([chr[int(x)] for x in str(x)]).rjust(4, "A")

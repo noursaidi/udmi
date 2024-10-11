@@ -102,7 +102,7 @@ class UDMI:
     self.publisher.publish_message(self.topic_state, state)
 
   def publish_discovery(self, payload):
-    logging.debug("published discovery: %s", payload.to_json())
+    logging.warning("published discovery: %s", payload.to_json())
     self.publisher.publish_message(self.topic_discovery_event, payload.to_json())
 
   def enable_discovery(self):
