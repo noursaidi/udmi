@@ -5,7 +5,7 @@ import datetime
 import glob
 import json
 import json
-from logging import error, info, warning
+from logging import error, info, warning, debug
 import os
 from pathlib import Path
 import random
@@ -31,7 +31,7 @@ ROOT_DIR = os.path.dirname(__file__)
 UDMI_DIR = str(Path(__file__).parents[4])
 
 SITE_PATH: Final = os.environ["DN_SITE_PATH"]
-error(SITE_PATH)
+
 TARGET: Final = "//mqtt/localhost"
 PROJECT_ID: Final = "localhost"
 
@@ -107,7 +107,7 @@ def run(cmd: str) -> subprocess.CompletedProcess:
       cwd=UDMI_DIR,
   )
   execution_time_seconds = time.monotonic() - start
-  info("completed with result code %s in %s seconds", str(result.returncode), str(execution_time_seconds))
+  debug("completed with result code %s in %s seconds", str(result.returncode), str(execution_time_seconds))
   # print not log, so they are captured when there is a failure
   print(result.stdout.decode("utf-8"))
   return result
@@ -258,7 +258,7 @@ def test_discovered_devices_are_created(
 
   site_model = Path(SITE_PATH)
   extra_devices = list([x.stem for x in site_model.glob("extras/*")])
-  assert len(extra_devices) == 9, "found exactly 9 devices"
+  assert len(extra_devices) == 9, "did not find exactly 9 devices"
 
 
 def test_sequencer(new_site_model, docker_devices, discovery_node):
@@ -285,10 +285,10 @@ def test_sequencer(new_site_model, docker_devices, discovery_node):
   )
 
   result = run(
-      f"bin/sequencer -v {SITE_PATH} {TARGET} GAT-1 single_scan_future"
+      f"bin/sequencer -v {SITE_PATH} {TARGET} GAT-1 scan_single_future"
   )
 
-  assert "RESULT pass discovery.scan single_scan_future" in str(result.stdout), "result is pass (note this test can be flakey)"
+  assert "RESULT pass discovery.scan scan_single_future" in str(result.stdout), "result is not pass (note this test can be flakey)"
 
 
 @pytest.fixture
