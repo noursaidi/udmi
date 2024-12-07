@@ -313,45 +313,45 @@ jobs:
   #         path: '*_udmi-support_*.tgz'
 
   # posttest:
-    name: Post-test Summarization
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [ baseline, sequencer, endpoint, runlocal ]
-    if: ${{ !cancelled() && vars.TARGET_PROJECT != '' }}
-    env:
-      TARGET_PROJECT: ${{ vars.TARGET_PROJECT }}
-      UDMI_ALT_REGISTRY: ZZ-REDIRECT-NA
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Base setup
-        run: bin/setup_base
-      - name: Download all sharded support packages
-        uses: actions/download-artifact@v4
-        with:
-          path: udmi-support_${{ github.run_id }}
-          pattern: udmi-support_${{ github.run_id }}-*
-          merge-multiple: true
-      - name: Upload merged support package
-        uses: actions/upload-artifact@v4
-        with:
-          if-no-files-found: error
-          name: udmi-support_${{ github.run_id }}
-          path: 'udmi-support_${{ github.run_id }}/*_udmi-support_*.tgz'
-      - name: Processing support package
-        run: bin/support_process udmi-support_*
-      - name: Test run index
-        run: |
-          ls -d sites/udmi_site_model*/out*/devices/AHU-1/tests/*
-          find out* -name 'schema*.out*' -size +0 | xargs more | cat
-      - name: Sequencer validation
-        if: ${{ !cancelled() }}
-        run: bin/test_sequcheck
-      - name: Itemized validation
-        if: ${{ !cancelled() }}
-        run: bin/test_itemcheck
+    # name: Post-test Summarization
+    # runs-on: ubuntu-latest
+    # timeout-minutes: 5
+    # needs: [ baseline, sequencer, endpoint, runlocal ]
+    # if: ${{ !cancelled() && vars.TARGET_PROJECT != '' }}
+    # env:
+    #   TARGET_PROJECT: ${{ vars.TARGET_PROJECT }}
+    #   UDMI_ALT_REGISTRY: ZZ-REDIRECT-NA
+    # steps:
+    #   - uses: actions/checkout@v4
+    #   - uses: actions/setup-python@v5
+    #     with:
+    #       python-version: '3.10'
+    #   - name: Base setup
+    #     run: bin/setup_base
+    #   - name: Download all sharded support packages
+    #     uses: actions/download-artifact@v4
+    #     with:
+    #       path: udmi-support_${{ github.run_id }}
+    #       pattern: udmi-support_${{ github.run_id }}-*
+    #       merge-multiple: true
+    #   - name: Upload merged support package
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       if-no-files-found: error
+    #       name: udmi-support_${{ github.run_id }}
+    #       path: 'udmi-support_${{ github.run_id }}/*_udmi-support_*.tgz'
+    #   - name: Processing support package
+    #     run: bin/support_process udmi-support_*
+    #   - name: Test run index
+    #     run: |
+    #       ls -d sites/udmi_site_model*/out*/devices/AHU-1/tests/*
+    #       find out* -name 'schema*.out*' -size +0 | xargs more | cat
+    #   - name: Sequencer validation
+    #     if: ${{ !cancelled() }}
+    #     run: bin/test_sequcheck
+    #   - name: Itemized validation
+    #     if: ${{ !cancelled() }}
+    #     run: bin/test_itemcheck
 
   discovery:
     name: Discovery Tests
