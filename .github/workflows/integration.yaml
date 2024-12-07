@@ -151,6 +151,15 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
       REF_NAME: ${{ github.ref_name }}
     steps:
+      - name: Start UDMIS container
+        run: |
+          export IMAGE_TAG=ghcr.io/$IMAGE_NAME:udmis-$REF_NAME
+          docker run $IMAGE_TAG cat bin/actualize > /tmp/actualize.sh
+          cat /tmp/actualize.sh && bash /tmp/actualize.sh
+      - name: Registrar run
+        run: |
+          docker run --net udminet --name registrar -v $(realpath site_model):/root/site_model \
+            ghcr.io/$IMAGE_NAME:validator-$REF_NAME bin/registrar site_model/cloud_iot_config.json
       - name: Start discoverynode
         run: |
           export IMAGE_TAG=ghcr.io/$IMAGE_NAME:misc-$REF_NAME
