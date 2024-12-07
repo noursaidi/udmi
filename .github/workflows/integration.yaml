@@ -151,6 +151,15 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
       REF_NAME: ${{ github.ref_name }}
     steps:
+      - name: Setup Environment
+        run: |
+          sudo apt-get install moreutils
+          git clone https://github.com/faucetsdn/udmi_site_model.git
+          ln -s udmi_site_model/ site_model
+          (cd site_model; git log -n 1)
+          jq ".device_id = \"$DEVICE_ID\"" site_model/cloud_iot_config.json | sponge site_model/cloud_iot_config.json
+          jq . site_model/cloud_iot_config.json
+          docker network create udminet --subnet 192.168.99.0/24
       - name: Start UDMIS container
         run: |
           export IMAGE_TAG=ghcr.io/$IMAGE_NAME:udmis-$REF_NAME
