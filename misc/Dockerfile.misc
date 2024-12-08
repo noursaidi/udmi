@@ -8,4 +8,4 @@ RUN apt-get update && \
     venv/bin/pip install --upgrade pip setuptools wheel
 
 COPY discoverynode/ discoverynode/
-RUN venv/bin/pip install --disable-pip-version-check -r discoverynode/src/requirements.txt
+RUN discoverynode/venv/bin/pip install --disable-pip-version-check -r discoverynode/src/requirements.txt
