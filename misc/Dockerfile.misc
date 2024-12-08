@@ -7,6 +7,5 @@ RUN apt-get update && \
     python3 -m venv venv && \
     venv/bin/pip install --upgrade pip setuptools wheel
 
-ADD discoverynode/src/requirements.txt /tmp/
-RUN venv/bin/pip install --disable-pip-version-check -r /tmp/requirements.txt
 ADD discoverynode/ discoverynode/
+RUN discoverynode/bin/setup
