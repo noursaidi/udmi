@@ -178,7 +178,7 @@ jobs:
               -v $(realpath site_model):/var/site_model \
               --name discoverynode \
               $IMAGE_TAG \
-              discoverynode/bin/run /var/site_model //mqtt/localhost AHU-1
+              bin/run /var/site_model //mqtt/localhost AHU-1
           sleep 30
           docker logs discoverynode
 
