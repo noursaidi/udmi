@@ -5,7 +5,7 @@ WORKDIR /root
 RUN apt-get update && \
     apt-get install --no-install-suggests --no-install-recommends --yes python3-venv gcc libpython3-dev sudo jq moreutils && \
     python3 -m venv discoverynode/venv && \
-    venv/bin/pip install --upgrade pip setuptools wheel
+    discoverynode/venv/bin/pip install --upgrade pip setuptools wheel
 
 COPY discoverynode/ discoverynode/
 RUN discoverynode/venv/bin/pip install --disable-pip-version-check -r discoverynode/src/requirements.txt
