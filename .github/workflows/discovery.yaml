@@ -30,4 +30,10 @@ jobs:
       - name: build binary
         run: |
           misc/discoverynode/bin/build_binary || true
-          ls misc/discoverynode/dist
+      - name: build docker
+        run: |
+          cat <<EOF > Dockerfile.scratch
+          FROM scratch
+          COPY misc/discoverynode/dist/discoverynode discoverynode
+EOF
+          docker build --no-cache -f Dockerfile.scratch .
