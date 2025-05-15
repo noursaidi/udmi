@@ -1,5 +1,14 @@
 #!/bin/bash -e
 set -x
+
+if (( $# != 1 )); then
+    echo "Usage: $0 BUILDENV_DOCKER_IMAGE"
+    echo BUILDENV_DOCKER_IMAGE could be a local or remote image.
+    exit 1
+fi
+
+BUILDENV=$1
+
 ROOT_DIR=$(realpath $(dirname $0)/..)
 
 TMP_DIR=$(mktemp -d)
@@ -17,8 +26,8 @@ cat >$TMP_DIR/build.sh <<-EOF
             mv dist/main /tmp/main
 EOF
 
-docker pull ghcr.io/noursaidi/discoverybuilder:latest 
-docker run --rm --volume $ROOT_DIR/src:/src --volume $TMP_DIR:/tmp ghcr.io/noursaidi/discoverybuilder:latest /bin/bash /tmp/build.sh
+docker pull $BUILDENV
+docker run --rm --volume $ROOT_DIR/src:/src --volume $TMP_DIR:/tmp $BUILDENV /bin/bash /tmp/build.sh
 mkdir -p $OUT_DIR
 mv $TMP_DIR/main $OUT_FILE
 chmod 7755 $OUT_FILE

@@ -1,0 +1,39 @@
+#!/bin/bash -e
+set -x
+
+ENVS_DIR=$(realpath $(dirname $0))
+
+if (( $# < 2 )); then
+    echo "Usage: $0 REGISTRY BUILDENV [FORCE]"
+    exit 1
+fi
+
+REGISTRY=$1
+BUILDENV=$2
+FORCE=$3
+
+DOCKERFILE_PATH="$ENVS_DIR/$BUILDENV.Dockerfile"
+if [[ ! -f $DOCKERFILE_PATH ]]; then
+    echo "ERROR! could not find $DOCKERFILE_PATH"
+    exit 1
+fi
+
+ref="${REGISTRY}/udmi/discoverynode/buildenv-${BUILDENV}"
+
+# Build if the image doesn't exist in the remot erepo
+docker manifest inspect $ref > /dev/null || shouldbuild=y
+
+# Else if there has been a change
+git diff --quiet HEAD HEAD~1 -- "$DOCKERFILE_PATH" || shouldbuild=y
+
+# Or we're being forced
+[[ -n $FORCE ]] && shouldbuild=y
+
+if [[ $shouldbuild != y ]]; then
+    echo not building $BUILDENV because not found a reason to.
+    echo exitting...
+    exit
+fi
+
+docker build -f "$DOCKERFILE_PATH" -t $ref:latest .
+docker push $ref:latest

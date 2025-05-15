@@ -1,0 +1,127 @@
+name: UDMI Integration Suite
+
+on:
+  push:
+    branches:
+      - '**'
+jobs:
+
+  # Copied from `integration.yaml` but with updated refs to udmi/IMAGE_NAME
+  images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        container: [ "udmis", "validator", "pubber" ]
+    env:
+      PUSH_REGISTRY: ghcr.io
+      CONTAINER: ${{ matrix.container }}
+      REF_NAME: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Log in to the github registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.PUSH_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Convert repository name to lowercase
+        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+      - name: Container build and push
+        run: |
+          revhash=$(git log -n 1 --pretty=format:"%h")
+          IMAGE_HASH=g${revhash:0:8}
+          IMAGE_REF=$PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/$CONTAINER
+          PUSH_TAG=$IMAGE_REF:latest
+
+          bin/clone_model
+          $CONTAINER/bin/build check
+          bin/container $CONTAINER push --no-check $PUSH_TAG
+
+          echo Pushed built $CONTAINER container as $PUSH_TAG | tee -a $GITHUB_STEP_SUMMARY
+
+  buildenvs:
+    name: Build and deploy build environments
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        environments: [ "ubuntu16", "debian11" ]
+    env:
+      PUSH_REGISTRY: ghcr.io
+      REF_NAME: ${{ github.ref_name }}
+      BUILDENV: ${{ matrix.environments }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Log in to the github registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.PUSH_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: build environment
+        run: |
+          misc/discoverynode/buildenvs/build.sh "${PUSH_REGISTRY}/$GITHUB_REPOSITORY_OWNER" "$BUILDENV"
+
+  discovery:
+    name: Build and deploy discovery node image
+    runs-on: ubuntu-latest
+    needs: buildenvs
+    strategy:
+      fail-fast: false
+      matrix:
+        environments: [ "ubuntu16", "debian11" ]
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 10
+    env:
+      PUSH_REGISTRY: ghcr.io
+      REF_NAME: ${{ github.ref_name }}
+      BUILDENV: ${{ matrix.environments }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Log in to the github registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.PUSH_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: build binary
+        run: |
+          buildenv_ref=$PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/discoverynode/buildenv-$BUILDENV
+          misc/discoverynode/bin/build_binary $buildenv_ref || true
+      - name: build oci image
+        run: |
+          cat <<EOF > Dockerfile.scratch
+          FROM scratch
+          COPY misc/discoverynode/dist/discoverynode discoverynode
+          EOF
+          cat Dockerfile.scratch
+          docker build --no-cache -t $PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/discoverynode-$BUILDENV:$REF_NAME -f Dockerfile.scratch .
+      - name: push oci image
+        run: |
+          docker push  $PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/discoverynode-$BUILDENV:$REF_NAME    
+        
