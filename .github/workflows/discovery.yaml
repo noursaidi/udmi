@@ -14,7 +14,6 @@ jobs:
     timeout-minutes: 5
     env:
       PUSH_REGISTRY: ghcr.io
-      CONTAINER: ${{ matrix.container }}
       REF_NAME: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
@@ -35,5 +34,9 @@ jobs:
           cat <<EOF > Dockerfile.scratch
           FROM scratch
           COPY misc/discoverynode/dist/discoverynode discoverynode
-EOF
-          docker build --no-cache -f Dockerfile.scratch .
+          EOF
+          docker build --no-cache -f -t ghrc.io/discverynode:$REF_NAME -Dockerfile.scratch .
+      - name: push docker
+        run: |
+          docker push ghrc.io/discverynode:$REF_NAME    
+        
