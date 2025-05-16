@@ -36,8 +36,8 @@ jobs:
           COPY misc/discoverynode/dist/discoverynode discoverynode
           EOF
           cat Dockerfile.scratch
-          docker build --no-cache -t ghrc.io/noursaidi/discverynode:$REF_NAME -f Dockerfile.scratch .
+          docker build --no-cache -t $PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/discverynode:$REF_NAME -f Dockerfile.scratch .
       - name: push docker
         run: |
-          docker push ghrc.io/noursaidi/discverynode:$REF_NAME    
+          docker push  $PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/discverynode:$REF_NAME    
         
