@@ -9,7 +9,7 @@ RUN wget https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tgz
 RUN tar -xzvf Python-3.12.8.tgz
 
 WORKDIR /tmp/Python-3.12.8
-RUN ./configure --enable-optimizations --with-ensurepip=install
+RUN ./configure --enable-optimizations --with-ensurepip=install --enable-shared
 RUN make -j6
 RUN make install
 
