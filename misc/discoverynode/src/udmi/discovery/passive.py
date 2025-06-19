@@ -93,12 +93,12 @@ class PassiveNetworkDiscovery(discovery.DiscoveryController):
     self.service_thread.start()
 
     self.sniffer = scapy.sendrecv.AsyncSniffer(
-        prn=self.queue.put, store=False, iface=self.interface, filter=PRIVATE_IP_BPC_FILTER
+        prn=self.queue.put, store=False, iface=self.interface
     )
 
     self.sniffer.start()
 
-    print(se)
+    logging.info("started aaa")
 
     self.packet_count_start = self._get_packet_counter_total()
 
