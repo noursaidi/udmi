@@ -59,7 +59,7 @@ def test_number_discovery_start_and_stop():
   assert numbers.state.phase == state.Phase.stopped
   #until_true(lambda: numbers.state.phase == discovery.states.FINISHED, "phase to be finished", 8)
   # maybe flakey?
-  assert [1, 2, 3, 4, 5] == [x[0].addr for (x, _) in mock_publisher.call_args_list]
+  assert ['1', '2', '3', '4', '5'] == [x[0].addr for (x, _) in mock_publisher.call_args_list]
 
 
 def test_event_counts():
@@ -94,7 +94,7 @@ def test_add_discovery_block_triggers_discovery_start():
 def test_having_no_config_then_recieve_repeated_identical_configs():
   mock_state = mock.MagicMock()
   mock_publisher = mock.MagicMock()
-  numbers =  udmi.discovery.numbers.NumberDiscovery(mock_state, mock_publisher)
+  numbers =  udmi.discovery.numbers.NumberDiscovery(mock_state, mock_publisher, range=None)
 
   generation_timestamp = make_timestamp()
 
@@ -106,7 +106,9 @@ def test_having_no_config_then_recieve_repeated_identical_configs():
     
     mock_start.assert_called_once()
 
-def test_past_generation():
+def test_past_generation_within_tolerance():
+  # Check that a slightly past generation still triggers discovery
+  # and that the generation in messages is the actual generation timestamp 
   mock_state = udmi.schema.state.State()
   mock_publisher = mock.MagicMock()
 
@@ -115,8 +117,9 @@ def test_past_generation():
   numbers.controller({"discovery": {"families": {"vendor" : {"generation": generation}}}})
   time.sleep(3)
 
-  assert mock_state.discovery.families["vendor"].generation == generation
-  assert all(x[0].generation == generation for (x, _) in mock_publisher.call_args_list)
+  # generation in state/event classes is a datetime whereas `generation` in a config is a string
+  assert udmi.schema.util.datetime_serializer(mock_state.discovery.families["vendor"].generation) == generation
+  assert all(udmi.schema.util.datetime_serializer(x[0].generation) ==  generation for (x, _) in mock_publisher.call_args_list)
   
 
 def test_stopping_completed_discovery():

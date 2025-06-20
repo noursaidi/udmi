@@ -107,7 +107,7 @@ class PassiveNetworkDiscovery(discovery.DiscoveryController):
 
     self.sniffer.start()
     if not self.scapy_is_go_signal.wait(5):
-      raise Exception(f"SCAPY did not start: {self.sniffer.exception}")
+      raise Exception(f"Failed to initiate packet capture - {self.sniffer.exception}")
 
     self.packet_count_start = self._get_packet_counter_total()
 
