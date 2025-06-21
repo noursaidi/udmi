@@ -26,9 +26,17 @@ logging.basicConfig(
 )
 logging.root.setLevel(logging.DEBUG)
 
+class MockedDateTime(datetime.datetime):
+  @classmethod
+  def now(cls, tz=None):
+    return datetime.datetime.fromtimestamp(1000, tz=tz)
 
-def make_timestamp(*,seconds_from_now = 0):
-  return udmi.schema.util.datetime_serializer(udmi.schema.util.current_time_utc() + datetime.timedelta(seconds=seconds_from_now))
+def make_timestamp(*,seconds_from_now = 0, seconds_from_epoch = None):
+  if seconds_from_epoch:
+    return udmi.schema.util.datetime_serializer(datetime.datetime.fromtimestamp(seconds_from_epoch))
+  else:
+    return udmi.schema.util.datetime_serializer(udmi.schema.util.current_time_utc() + datetime.timedelta(seconds=seconds_from_now))
+
 
 
 def until_true(func: Callable, message: str, timeout: int = 0):
@@ -137,3 +145,51 @@ def test_invalid_duration_and_interval():
     assert numbers.state.phase == discovery.states.error
     assert numbers.state.status.level == 500
     mock_start.assert_not_called()
+
+
+@pytest.mark.parametrize(
+  "seconds_from_now, scan_interval, expected_delay, should_raise_error",
+  [
+    (-18, 10, 2, False),  # In the past, next run in 2 seconds
+    (-20, 10, 0, False),  # In the past, next run is now
+    (-22, 10, 8, False),  # In the past, next run in 8 seconds
+    (10, 10, 10, False),   # In the future, runs in 10 seconds
+    (-5, None, -5, False), # In the past, no interval, starts with negative delay
+  #  (-11, None, None, True), # In the past, no interval, exceeds threshold
+  ]
+)
+def test_generation_scheduling(seconds_from_now, scan_interval, expected_delay, should_raise_error):
+    # Note: 
+    mock_state = udmi.schema.state.State()
+    mock_publisher = mock.MagicMock()
+    numbers = udmi.discovery.numbers.NumberDiscovery(mock_state, mock_publisher)
+
+    with mock.patch.object(numbers, '_scheduler') as mock_scheduler, \
+         mock.patch('time.time', return_value=1000), \
+         mock.patch('datetime.datetime', MockedDateTime):
+        logging.error(f"seconds from now: {seconds_from_now}")
+        generation_timestamp = make_timestamp(seconds_from_epoch=1000 + seconds_from_now) 
+        config = {
+            "discovery": {
+                "families": {
+                    "vendor": {
+                        "generation": generation_timestamp,
+                        "scan_interval_sec": scan_interval if scan_interval else None
+                    }
+                }
+            }
+        }
+
+        if should_raise_error:
+            # doesn't work because wrapped
+            assert numbers.state.phase == udmi.schema.state.Phase.ERROR
+            return
+
+        numbers.controller(config)
+        mock_scheduler.assert_called()
+        call_args, _ = mock_scheduler.call_args
+        start_time = call_args[0]
+      
+    # hacky because timestamps are generted from datetime and timestamp
+    # needs to mock all the objects to make it work
+    assert pytest.approx(expected_delay + 1000, abs=1) == start_time
