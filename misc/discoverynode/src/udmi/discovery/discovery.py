@@ -39,6 +39,7 @@ def catch_exceptions_to_state(method: Callable):
     try:
       return method(self, *args, **kwargs)
     except Exception as err:
+      raise(err)
       self._handle_exception(err)
   return _impl
 
@@ -215,7 +216,7 @@ class DiscoveryController(abc.ABC):
     if config.scan_duration_sec < 0 or config.scan_interval_sec < 0:
       raise RuntimeError("scan duration or interval cannot be negative")
 
-  #@catch_exceptions_to_state
+  @catch_exceptions_to_state
   def _scheduler(self, start_time:int, config: udmi.schema.config.DiscoveryFamily, initial_generation: datetime.datetime) -> None:
     """ The scheduler runs as a dedicated thread and is used to manage
     and schedule scans.
@@ -414,3 +415,6 @@ class DiscoveryController(abc.ABC):
                  udmi.schema.util.datetime_serializer(new_generation))
     self.generation = new_generation
     self.state.generation = new_generation
+
+  def __del__(self):
+    self._stop()

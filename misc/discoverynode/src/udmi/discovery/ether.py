@@ -15,7 +15,7 @@ class EtherDiscovery(discovery.DiscoveryController):
 
   family = "ether"
 
-  def __init__(self, state, publisher, *, target_ips: list[str]):
+  def __init__(self, state, publisher, *, target_ips: list[str] = None):
     self.cancel_threads = threading.Event()
     self.target_ips = target_ips
     self.nmap_thread = None
@@ -31,8 +31,10 @@ class EtherDiscovery(discovery.DiscoveryController):
   def stop_discovery(self) -> None:
     if not self.last_bathometer_reading:
       logging.info("not stopping because no known bathometer reading")
+      return
+
     logging.info("calling stop for %s", self.last_bathometer_reading)
-    getattr(self, f"{prefix}_stop_discovery")()
+    getattr(self, f"{self.last_bathometer_reading}_stop_discovery")()
 
   def magic_bathometer(self, depth: str) -> str:
     """ Identifies the discovery scan to run based on the given depth"""
@@ -44,7 +46,14 @@ class EtherDiscovery(discovery.DiscoveryController):
       case _:
         raise RuntimeError(f'unmatched depth {depth}')
 
+  def ping_start_discovery(self):
+    pass
+
+  def ping_stop_discovery(self):
+    pass
+
   def nmap_start_discovery(self):
+    logging.error("hello its me")
     self.cancel_threads.clear()
     self.nmap_thread = threading.Thread(
         target=self.nmap_runner, args=[], daemon=True
