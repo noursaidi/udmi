@@ -148,23 +148,24 @@ def test_invalid_duration_and_interval():
 
 
 @pytest.mark.parametrize(
-  "seconds_from_now, scan_interval, expected_delay, should_raise_error",
+  "seconds_from_now, scan_interval, expected_delay, threshold, should_raise_error",
   [
-    (-18, 10, 2, False),  # In the past, next run in 2 seconds
-    (-20, 10, 0, False),  # In the past, next run is now
-    (-22, 10, 8, False),  # In the past, next run in 8 seconds
-    (10, 10, 10, False),   # In the future, runs in 10 seconds
-    (-5, None, -5, False), # In the past, no interval, starts with negative delay
+    (-18, 10, 2, -1, False),  # In the past, next run in 2 seconds
+    (-20, 10, 0, -1, False),  # In the past, next run is now
+    (-22, 10, 8, -1, False),  # In the past, next run in 8 seconds
+    (10, 10, 10, -1, False),   # In the future, runs in 10 seco   nds
+    (-5, None, -5, -10, False), # In the past, no interval, starts with negative delay
   #  (-11, None, None, True), # In the past, no interval, exceeds threshold
   ]
 )
-def test_generation_scheduling(seconds_from_now, scan_interval, expected_delay, should_raise_error):
+def test_generation_scheduling(seconds_from_now, scan_interval, threshold, expected_delay, should_raise_error):
     # Note: 
     mock_state = udmi.schema.state.State()
     mock_publisher = mock.MagicMock()
     numbers = udmi.discovery.numbers.NumberDiscovery(mock_state, mock_publisher)
 
     with mock.patch.object(numbers, '_scheduler') as mock_scheduler, \
+         mock.patch.object(discovery, 'MAX_THRESHOLD_GENERATION', new=threshold), \
          mock.patch('time.time', return_value=1000), \
          mock.patch('datetime.datetime', MockedDateTime):
         logging.error(f"seconds from now: {seconds_from_now}")

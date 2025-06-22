@@ -10,7 +10,7 @@ import udmi.schema.state
 import dataclasses
 
 
-class NmapBannerScan(discovery.DiscoveryController):
+class EtherDiscovery(discovery.DiscoveryController):
   """Passive Network Discovery."""
 
   family = "ether"
@@ -19,16 +19,39 @@ class NmapBannerScan(discovery.DiscoveryController):
     self.cancel_threads = threading.Event()
     self.target_ips = target_ips
     self.nmap_thread = None
+    self.last_bathometer_reading = None
     super().__init__(state, publisher)
 
-  def start_discovery(self):
+  def start_discovery(self) -> None:
+    prefix = self.magic_bathometer(self.config.depth)
+    logging.info(f"magic bathometer read {prefix}")
+    self.last_bathometer_reading = prefix
+    getattr(self, f"{prefix}_start_discovery")()
+
+  def stop_discovery(self) -> None:
+    if not self.last_bathometer_reading:
+      logging.info("not stopping because no known bathometer reading")
+    logging.info("calling stop for %s", self.last_bathometer_reading)
+    getattr(self, f"{prefix}_stop_discovery")()
+
+  def magic_bathometer(self, depth: str) -> str:
+    """ Identifies the discovery scan to run based on the given depth"""
+    match depth:
+      case 'ping':
+        return 'ping'
+      case 'ports':
+        return 'nmap'
+      case _:
+        raise RuntimeError(f'unmatched depth {depth}')
+
+  def nmap_start_discovery(self):
     self.cancel_threads.clear()
     self.nmap_thread = threading.Thread(
         target=self.nmap_runner, args=[], daemon=True
     )
     self.nmap_thread.start()
 
-  def stop_discovery(self):
+  def nmap_stop_discovery(self):
     logging.info("stopping")
     self.cancel_threads.set()
     self.nmap_thread.join()
