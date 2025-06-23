@@ -8,6 +8,8 @@ import udmi.discovery.utils.nmap as nmap
 import udmi.schema.discovery_event
 import udmi.schema.state
 import dataclasses
+import concurrent.futures
+import collections
 
 
 class EtherDiscovery(discovery.DiscoveryController):
@@ -20,6 +22,7 @@ class EtherDiscovery(discovery.DiscoveryController):
     self.target_ips = target_ips
     self.nmap_thread = None
     self.last_bathometer_reading = None
+    self.target_ips: collections.deque | None = None
     super().__init__(state, publisher)
 
   def start_discovery(self) -> None:
@@ -46,12 +49,64 @@ class EtherDiscovery(discovery.DiscoveryController):
       case _:
         raise RuntimeError(f'unmatched depth {depth}')
 
+  @discovery.catch_exceptions_to_state
+  @discovery.main_task
+  def ping_dispatcher(self, target_ips: list[str]):
+    """ Dispatches ping tasks across simulateous workers """
+    if not target_ips:
+      logging.warning("no targets given for ping scan")
+      return
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+      futures = [executor.submit(self.ping_task, ip) for ip in target_ips]
+      while not concurrent.futures.wait(futures, 1, return_when=concurrent.futures.ALL_COMPLETED):
+        logging.info("looped")
+        if self.cancel_threads.is_set():
+          executor.shutdown(True, cancel_futures=True)
+
+  def ping_task(self, target_ip: str) -> bool:
+    """Sends a single ping to the target IP. Returns True if successful."""
+    logging.debug("ping task %s", target_ip)
+    try:
+      # -c 1: expect 1 packet
+      # -W 2: wait 2 seconds for a response
+      result = subprocess.run(
+          ["/usr/bin/ping", "-c", "1", "-2", "2", target_ip], 
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT,
+          encoding="utf-8",
+          check=True, 
+          timeout=5,
+      )
+      event = udmi.schema.discovery_event.DiscoveryEvent(
+          generation=self.generation,
+          family=self.family,
+          addr=target_ip,
+      )
+      self.publish(event)
+
+    except subprocess.CalledProcessError as e:
+      logging.error(f"Ping failed for %s: %s", target_ip, e.output)
+      return False
+    except Exception as e:
+      logging.error(f"Ping exception for %s: %s", target_ip, e)
+      return False
+  
   def ping_start_discovery(self):
-    pass
+    """Start ping discovery scan."""
+    logging.info("starting ping discovery")
+    self.cancel_threads.clear()
+    self.ping_thread = threading.Thread(
+        target=self.ping_dispatcher, args=[self.config.addrs], daemon=True
+    )
+    self.ping_thread.start()
 
   def ping_stop_discovery(self):
-    pass
-
+    """Stop ping discovery scan."""
+    logging.info("stopping ping discovery")
+    self.cancel_threads.set()
+    if self.ping_thread and self.ping_thread.is_alive():
+      self.ping_thread.join()
+  
   def nmap_start_discovery(self):
     logging.error("hello its me")
     self.cancel_threads.clear()
