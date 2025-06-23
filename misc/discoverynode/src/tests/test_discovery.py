@@ -38,24 +38,6 @@ def make_timestamp(*,seconds_from_now = 0, seconds_from_epoch = None):
     return udmi.schema.util.datetime_serializer(udmi.schema.util.current_time_utc() + datetime.timedelta(seconds=seconds_from_now))
 
 
-
-def until_true(func: Callable, message: str, timeout: int = 0):
-  """Blocks until given func returns True
-  Args:
-    func: Predicate function
-    message: Message
-  Raises:
-    Exception if timeout has elapsed
-  """
-  interval = 0.1
-  expiry_time = time.monotonic() + timeout
-  while time.monotonic() < expiry_time or timeout == 0:
-    if func():
-      return True
-    time.sleep(interval)
-  raise Exception(f"Timed out waiting {timeout}s for {message}")
-
-
 def test_number_discovery_start_and_stop():
   mock_state = mock.MagicMock()
   mock_publisher = mock.MagicMock()
@@ -135,7 +117,7 @@ def test_stopping_completed_discovery():
   pass
 
 def test_invalid_duration_and_interval():
-  return
+
   # should not go through "stopping" because it's done .. i.e. ignore!
   mock_state = mock.MagicMock()
   mock_publisher = mock.MagicMock()
