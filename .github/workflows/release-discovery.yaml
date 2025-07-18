@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        environments: [ "ubuntu16", "debian11" ]
     permissions:
       contents: read
       packages: write
@@ -34,9 +32,6 @@ jobs:
           registry: ${{ env.PUSH_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: build binary
-        run: |
-          misc/discoverynode/bin/build_binary $PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/discoverynode/buildenv-$BUILDENV || true
       - name: build and push oci image
         run: |
           IMAGE_REF="$PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/discoverynode"
