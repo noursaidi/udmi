@@ -36,7 +36,5 @@ jobs:
         run: |
           IMAGE_REF="$PUSH_REGISTRY/$GITHUB_REPOSITORY_OWNER/udmi/discoverynode"
           IMAGE_TAG=latest
-          ./misc/discoverynode/testing/docker/discovery_node/build.sh
-          docker tag test-discovery_node $IMAGE_REF:$IMAGE_TAG
-          docker push $IMAGE_REF:$IMAGE_TAG
+          ./misc/discoverynode/testing/docker/discovery_node/build.sh $IMAGE_REF:$IMAGE_TAG
           echo Pushed built $CONTAINER container as $IMAGE_REF:$IMAGE_TAG | tee -a $GITHUB_STEP_SUMMARY
