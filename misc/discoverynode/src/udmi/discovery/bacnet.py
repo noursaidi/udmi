@@ -101,7 +101,7 @@ class GlobalBacnetDiscovery(discovery.DiscoveryController):
 
     ### Basic Properties
     ###################################################################
-    if self.config.depth in ["system", "device"]:
+    if self.config.depth in ["system", "refs"]:
       try:
         object_name, vendor_name, firmware_version, model_name, serial_number = (
             self.bacnet.readMultiple(
@@ -125,7 +125,7 @@ class GlobalBacnetDiscovery(discovery.DiscoveryController):
 
     ### Points
     ###################################################################
-    if self.config.depth in ["refs", "system", "device"]:
+    if self.config.depth in ["refs"]:
       try:
         device = BAC0.device(device_address, device_id, self.bacnet, poll=0)
 
