@@ -1,4 +1,16 @@
 #!/bin/bash -ex
+if (( $# != 1 )); then
+    echo Usage: $0 IMAGE
+    exit 1
+fi
 ROOT_DIR=$(dirname $(realpath $0 ))
-cd $ROOT_DIR/../../../src
-docker build -t test-discovery_node -f $ROOT_DIR/Dockerfile .
+SRCPATH=$(realpath $ROOT_DIR/../../../src)
+
+IMAGE_REF=$1
+VERSION_REF=$(date +%y%m%d)-$(git rev-list --count --since="today 00:00:00" HEAD)
+echo $VERSION_REF > $SRCPATH/udmi/installed_version.txt
+
+cd $SRCPATH
+docker build -t $IMAGE_REF -f $ROOT_DIR/Dockerfile .
+docker push $IMAGE_REF
+

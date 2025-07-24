@@ -22,7 +22,6 @@ PRIVATE_IP_BPF_FILTER = (
     "src net 10.0.0.0/8 or src net 172.16.0.0/12 or src net 192.168.0.0/16 or "
     "src net 100.64.0.0/10"
     ") and ("
-    "("
     "dst net 10.0.0.0/8 or dst net 172.16.0.0/12 or dst net 192.168.0.0/16 or "
     "dst net 100.64.0.0/10"
     ")"
