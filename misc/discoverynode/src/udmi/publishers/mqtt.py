@@ -182,6 +182,7 @@ class MQTT(udmi.publishers.publisher.Publisher):
       self.logger.info(f"on_disconnect {reason_code}")
     else:
       self.logger.error(f"on_disconnect {reason_code}")
+      self.print_public_key()
 
     #
 
