@@ -26,7 +26,6 @@ import dataclasses
 BAC0.log_level(log_file=None, stdout=None, stderr=None)
 BAC0.log_level("silence")
 
-
 class BacnetObjectAcronyms(enum.StrEnum):
   """ Mapping of object names to accepted aronyms"""
   analogInput = "AI"
