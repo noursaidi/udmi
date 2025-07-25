@@ -70,6 +70,7 @@ class MQTT(udmi.publishers.publisher.Publisher):
     self.mqtt_port = port
 
     self.private_key_file = key_file
+    self.public_key_file = public_key_file
     self.jwt_exp_mins = jwt_minutes
     self.project_id = project_id
     self.algorithm = algorithm
