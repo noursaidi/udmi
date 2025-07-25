@@ -66,7 +66,7 @@ def main():
   logging.info("Loading config from %s", args.config_file)
   config = load_config_from_file(args.config_file)
 
-  # TODO: Should probably set this in the config
+  # TODO: Should probably set this in the config with basic templating
   if config["mqtt"].get("authentication_mechanism", "jwt_gcp") == "jwt_gcp":
     topic_prefix = f'/devices/{config["mqtt"]["device_id"]}'
   else:
@@ -82,7 +82,7 @@ def main():
       port=config["mqtt"]["port"],
       topic_prefix=topic_prefix,
       key_file=config["mqtt"]["key_file"],
-      public_key=config["mqtt"].get("public_key"),
+      public_key_file=config["mqtt"].get("public_key_file"),
       algorithm=config["mqtt"]["algorithm"],
       autentication_mechanism=config["mqtt"].get("authentication_mechanism", "jwt-gcp"),
       ca_file=config["mqtt"].get("ca_file"),
