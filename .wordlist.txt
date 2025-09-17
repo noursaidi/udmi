@@ -60,6 +60,8 @@ GCP
 GCR
 GCS
 gencode
+GHCR
+ghcr
 GiB
 github
 Github
@@ -128,6 +130,8 @@ PubSub
 pubsub
 QoS
 Readme
+Reconciler
+reconciler
 repo
 RPC
 RSA
@@ -171,6 +175,7 @@ UI
 unconfigured
 underspecified
 uniqs
+UNK
 unprocessable
 unwriteable
 uplink
