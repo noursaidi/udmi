@@ -80,6 +80,7 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   private static final String CLIENT_ID_FORMAT = "/r/%s/d/%s";
   private static final String CLIENT_PREFIX = "/r";
   private static final String AUTH_PASSWORD_PROPERTY = "auth_pass";
+  private static final String AUTH_KEY_PROPERTY = "auth_key";
   private static final String LAST_CONFIG_ACKED = "last_config_ack";
   private static final String CONFIG_SUFFIX = "/config";
   private static final String METADATA_STR_KEY = "metadata_str";
@@ -213,9 +214,11 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
     ifNotNullThen(cloudModel.credentials, creds -> ifNotTrueThen(creds.isEmpty(), () -> {
       checkState(creds.size() == 1, "only one credential supported");
       Credential cred = creds.get(0);
-      checkState(cred.key_format == Key_format.PASSWORD,
-          "key type not supported: " + cred.key_format);
-      properties.put(AUTH_PASSWORD_PROPERTY, cred.key_data);
+      if (cred.key_format == Key_format.PASSWORD) {
+        properties.put(AUTH_PASSWORD_PROPERTY, cred.key_data);
+      } else {
+        properties.put(AUTH_KEY_PROPERTY, cred.key_data);
+      }
     }));
     return properties;
   }
