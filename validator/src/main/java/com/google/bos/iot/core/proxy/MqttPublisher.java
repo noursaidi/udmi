@@ -100,7 +100,7 @@ public class MqttPublisher implements MessagePublisher {
   private static final String MESSAGE_TOPIC_FMT = "/%s";
   private static final int QOS_AT_MOST_ONCE = 0;
   private static final int QOS_AT_LEAST_ONCE = 1;
-  private static final int INITIALIZE_TIME_MS = 20000;
+  private static final int INITIALIZE_TIME_MS = 30000;
   private static final String BROKER_URL_FORMAT = "%s://%s:%s";
   private static final int PUBLISH_THREAD_COUNT = 10;
   private static final Duration TOKEN_EXPIRATION = Duration.ofHours(1);
