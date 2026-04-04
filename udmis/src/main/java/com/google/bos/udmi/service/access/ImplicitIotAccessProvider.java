@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.udmi.util.GeneralUtils;
 import com.google.udmi.util.JsonUtil;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +86,10 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   private static final String CONFIG_SUFFIX = "/config";
   private static final String METADATA_STR_KEY = "metadata_str";
   private static final String RESOURCE_TYPE_PROPERTY = "resource_type";
+  private static final Set<String> OPERATIONAL_FIELDS = ImmutableSet.of(
+      CONFIG_VER_KEY, LAST_CONFIG_KEY, LAST_STATE_KEY, BOUND_TO_KEY,
+      NUM_ID_PROPERTY, CREATED_AT_PROPERTY, LAST_CONFIG_ACKED,
+      AUTH_KEY_PROPERTY, AUTH_PASSWORD_PROPERTY);
   private final boolean enabled;
   private final ConnectionBroker broker = new MosquittoBroker(this);
   private final Future<Void> connLogger;
@@ -154,7 +159,10 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
 
     Map<String, String> map = toDeviceMap(cloudModel, timestamp);
     DataRef props = mungeDevice(registryId, deviceId, map);
-    props.entries().keySet().stream().filter(not(map::containsKey)).forEach(props::delete);
+    props.entries().keySet().stream()
+        .filter(not(map::containsKey))
+        .filter(not(OPERATIONAL_FIELDS::contains))
+        .forEach(props::delete);
   }
 
   private void deleteDevice(String registryId, String deviceId, CloudModel cloudModel) {
@@ -194,6 +202,10 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   }
 
   private void sendConfigUpdate(String registryId, String deviceId, String config) {
+    if (reflect == null) {
+      debug("No reflector component, skipping config update for %s/%s", registryId, deviceId);
+      return;
+    }
     Envelope envelope = new Envelope();
     envelope.deviceRegistryId = registryId;
     envelope.deviceId = deviceId;
@@ -238,7 +250,7 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   @Override
   public void activate() {
     database = UdmiServicePod.getComponent(IMPLICIT_DATABASE_COMPONENT);
-    reflect = UdmiServicePod.getComponent(ReflectProcessor.class);
+    reflect = UdmiServicePod.maybeGetComponent(ReflectProcessor.class);
     super.activate();
   }
 
@@ -261,12 +273,28 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   public CloudModel fetchDevice(String registryId, String deviceId) {
     touchDeviceEntry(registryId, deviceId);
     Map<String, String> properties = registryDeviceRef(registryId, deviceId).entries();
-    if (properties == null) {
+    if (properties == null || properties.isEmpty()) {
       return null;
     }
     CloudModel cloudModel = requireNonNull(JsonUtil.convertTo(CloudModel.class, properties));
     cloudModel.metadata = ifNotNullGet(cloudModel.metadata_str, JsonUtil::toStringMapStr);
     cloudModel.metadata_str = null;
+
+    ifNotNullThen(properties.get(AUTH_KEY_PROPERTY), key -> {
+      Credential credential = new Credential();
+      credential.key_data = key;
+      credential.key_format = Key_format.RS_256; // Default format for auth_key
+      ifNullThen(cloudModel.credentials, () -> cloudModel.credentials = new ArrayList<>());
+      cloudModel.credentials.add(credential);
+    });
+
+    ifNotNullThen(properties.get(AUTH_PASSWORD_PROPERTY), pass -> {
+      Credential credential = new Credential();
+      credential.key_data = pass;
+      credential.key_format = Key_format.PASSWORD;
+      ifNullThen(cloudModel.credentials, () -> cloudModel.credentials = new ArrayList<>());
+      cloudModel.credentials.add(credential);
+    });
 
     cloudModel.gateway = new GatewayModel();
     cloudModel.gateway.proxy_ids =
@@ -376,6 +404,11 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
 
   @Override
   public void sendCommandBase(Envelope baseEnvelope, SubFolder folder, String message) {
+    if (reflect == null) {
+      debug("No reflector component, skipping command for %s/%s", baseEnvelope.deviceRegistryId,
+          baseEnvelope.deviceId);
+      return;
+    }
     Envelope envelope = deepCopy(baseEnvelope);
     envelope.subFolder = folder;
     envelope.subType = SubType.COMMANDS;
