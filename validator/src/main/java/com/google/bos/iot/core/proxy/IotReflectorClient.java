@@ -23,7 +23,6 @@ import static com.google.udmi.util.GeneralUtils.friendlyStackTrace;
 import static com.google.udmi.util.GeneralUtils.getTimestamp;
 import static com.google.udmi.util.GeneralUtils.ifNotNullGet;
 import static com.google.udmi.util.GeneralUtils.ifNotNullThen;
-import static com.google.udmi.util.GeneralUtils.ifNotTrueThen;
 import static com.google.udmi.util.GeneralUtils.ifTrueThen;
 import static com.google.udmi.util.GeneralUtils.isTrue;
 import static com.google.udmi.util.JsonUtil.asMap;
@@ -95,8 +94,8 @@ public class IotReflectorClient implements MessagePublisher {
   private static final String EVENTS_TYPE = "events";
   private static final String MOCK_DEVICE_NUM_ID = "123456789101112";
   private static final String UDMI_TOPIC = "events/" + SubFolder.UDMI;
-  private static final long CONFIG_TIMEOUT_SEC = 60;
-  private static final int UPDATE_RETRIES = 6;
+  private static final long CONFIG_TIMEOUT_SEC = 120;
+  private static final int UPDATE_RETRIES = 10;
   private static final Collection<String> COPY_IDS = ImmutableSet.of(DEVICE_ID_KEY, GATEWAY_ID_KEY,
       SUBTYPE_PROPERTY_KEY, SUBFOLDER_PROPERTY_KEY, TRANSACTION_KEY, PUBLISH_TIME_KEY);
   public static final String TRANSACTION_ID_PREFIX = "RC:";
@@ -271,17 +270,11 @@ public class IotReflectorClient implements MessagePublisher {
   }
 
   private String getReflectorTopic() {
-    return switch (iotProvider) {
-      case MQTT -> SubType.REFLECT.toString();
-      default -> STATE_TOPIC;
-    };
+    return STATE_TOPIC;
   }
 
   private String getPublishTopic() {
-    return switch (iotProvider) {
-      case MQTT -> SubType.REFLECT.toString();
-      default -> UDMI_TOPIC;
-    };
+    return UDMI_TOPIC;
   }
 
   @Override
@@ -309,7 +302,7 @@ public class IotReflectorClient implements MessagePublisher {
       }
       ifNotNullThen(envelope.source, source -> messageMap.put(SOURCE_KEY, source),
           () -> messageMap.remove(SOURCE_KEY));
-      if (SubType.CONFIG == envelope.subType) {
+      if (SubType.CONFIG == envelope.subType || SubType.REFLECT == envelope.subType) {
         ensureCloudSync(messageMap);
       } else if (SubType.COMMANDS == envelope.subType) {
         handleEncapsulatedMessage(envelope, messageMap);
@@ -392,8 +385,11 @@ public class IotReflectorClient implements MessagePublisher {
   }
 
   private void processUdmiEvent(Map<String, Object> message) {
+    if (message == null) {
+      return;
+    }
     UdmiEvents events = convertTo(UdmiEvents.class, message);
-    if (events.logentries == null || events.logentries.isEmpty()) {
+    if (events == null || events.logentries == null || events.logentries.isEmpty()) {
       return;
     }
     updateLastProgressEvent();
@@ -506,8 +502,24 @@ public class IotReflectorClient implements MessagePublisher {
 
   private Envelope parseMessageTopic(String topic) {
     try {
-      String slashless = topic.startsWith("/") ? topic.substring(1) : topic;
-      List<String> parts = new ArrayList<>(Arrays.asList(slashless.split("/")));
+      List<String> parts = new ArrayList<>(Arrays.asList(topic.split("/")));
+      parts.removeIf(String::isEmpty);
+      if (parts.isEmpty()) {
+        return null;
+      }
+
+      Envelope envelope = new Envelope();
+      envelope.deviceRegistryId = registryId;
+
+      if (parts.get(0).equals("c")) {
+        parts.remove(0); // Remove "c" designator
+        envelope.source = parts.remove(0); // Remove channel (source) designator
+      }
+
+      if (parts.isEmpty()) {
+        return null;
+      }
+
       String leader = parts.remove(0);
       if ("devices".equals(leader)) {
         // Next field is registry, not device, since the reflector device id is the site registry.
@@ -531,14 +543,6 @@ public class IotReflectorClient implements MessagePublisher {
         }
       } else {
         return null;
-      }
-
-      Envelope envelope = new Envelope();
-      envelope.deviceRegistryId = registryId;
-
-      if (!parts.isEmpty() && parts.get(0).equals("c")) {
-        parts.remove(0); // Remove "c" designator
-        envelope.source = parts.remove(0); // Remove channel (source) designator
       }
 
       if (parts.isEmpty()) {

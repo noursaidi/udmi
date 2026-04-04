@@ -158,11 +158,7 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
     ifNullThen(cloudModel.num_id, () -> cloudModel.num_id = hashedDeviceId(registryId, deviceId));
 
     Map<String, String> map = toDeviceMap(cloudModel, timestamp);
-    DataRef props = mungeDevice(registryId, deviceId, map);
-    props.entries().keySet().stream()
-        .filter(not(map::containsKey))
-        .filter(not(OPERATIONAL_FIELDS::contains))
-        .forEach(props::delete);
+    mungeDevice(registryId, deviceId, map);
   }
 
   private void deleteDevice(String registryId, String deviceId, CloudModel cloudModel) {
@@ -183,14 +179,23 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   }
 
   private DataRef mungeDevice(String registryId, String deviceId, Map<String, String> map) {
-    DataRef properties = registryDeviceRef(registryId, deviceId);
+    DataRef props = registryDeviceRef(registryId, deviceId);
     map.forEach((key, value) ->
-        ifNotNullThen(value, v -> properties.put(key, value), () -> properties.delete(key)));
+        ifNotNullThen(value, v -> props.put(key, value), () -> props.delete(key)));
+
+    props.entries().keySet().stream()
+        .filter(not(map::containsKey))
+        .filter(not(OPERATIONAL_FIELDS::contains))
+        .forEach(props::delete);
 
     if (map.containsKey(AUTH_PASSWORD_PROPERTY)) {
       broker.authorize(clientId(registryId, deviceId), map.get(AUTH_PASSWORD_PROPERTY));
+    } else if (map.containsKey(AUTH_KEY_PROPERTY)) {
+      String keyData = map.get(AUTH_KEY_PROPERTY);
+      String password = GeneralUtils.sha256(keyData.getBytes()).substring(0, 8);
+      broker.authorize(clientId(registryId, deviceId), password);
     }
-    return properties;
+    return props;
   }
 
   private DataRef registryDeviceRef(String registryId, String deviceId) {
@@ -220,16 +225,18 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
     properties.put(RESOURCE_TYPE_PROPERTY,
         ofNullable(cloudModel.resource_type).orElse(DIRECT).toString());
     requireNull(cloudModel.metadata_str, "unexpected metadata_str content");
-    properties.put(METADATA_STR_KEY, stringifyTerse(cloudModel.metadata));
-    properties.put(BLOCKED_PROPERTY, booleanString(cloudModel.blocked));
+    ifNotNullThen(cloudModel.metadata, m -> properties.put(METADATA_STR_KEY, stringifyTerse(m)));
+    ifNotNullThen(cloudModel.blocked, b -> properties.put(BLOCKED_PROPERTY, booleanString(b)));
     ifNotNullThen(cloudModel.num_id, id -> properties.put(NUM_ID_PROPERTY, id));
     ifNotNullThen(cloudModel.credentials, creds -> ifNotTrueThen(creds.isEmpty(), () -> {
       checkState(creds.size() == 1, "only one credential supported");
       Credential cred = creds.get(0);
       if (cred.key_format == Key_format.PASSWORD) {
         properties.put(AUTH_PASSWORD_PROPERTY, cred.key_data);
+        properties.put(AUTH_KEY_PROPERTY, null);
       } else {
         properties.put(AUTH_KEY_PROPERTY, cred.key_data);
+        properties.put(AUTH_PASSWORD_PROPERTY, null);
       }
     }));
     return properties;
