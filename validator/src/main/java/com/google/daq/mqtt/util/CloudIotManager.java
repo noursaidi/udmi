@@ -235,7 +235,8 @@ public class CloudIotManager {
         String prefix = getCredentialPrefix(credential.key_format);
         credential.key_format = Key_format.PASSWORD;
         File privateKey = new File(siteModel, format(PRIVATE_KEY_BYTES_FMT, deviceId, prefix));
-        credential.key_data = makePassword(readAllBytes(privateKey.toPath()));
+        credential.password = makePassword(readAllBytes(privateKey.toPath()));
+        credential.username = deviceId;
       } catch (Exception e) {
         throw new RuntimeException("While coercing credential for " + deviceId, e);
       }
