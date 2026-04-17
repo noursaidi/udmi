@@ -220,9 +220,9 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
       Credential cred = creds.get(0);
       checkState(cred.key_format == Key_format.PASSWORD,
           "key type not supported: " + cred.key_format);
-      ifNotNullThen(cred.password, p -> properties.put(AUTH_PASSWORD_PROPERTY, p));
-      ifNotNullThen(cred.username, u -> properties.put(AUTH_USER_PROPERTY, u));
-      ifNotNullThen(cred.key_data, k -> properties.put(AUTH_KEY_PROPERTY, k));
+      properties.put(AUTH_PASSWORD_PROPERTY, cred.password);
+      properties.put(AUTH_USER_PROPERTY, cred.username);
+      properties.put(AUTH_KEY_PROPERTY, cred.key_data);
     }));
     return properties;
   }
