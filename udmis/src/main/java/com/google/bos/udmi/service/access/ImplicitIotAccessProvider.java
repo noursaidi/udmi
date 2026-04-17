@@ -80,6 +80,8 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   private static final String CLIENT_ID_FORMAT = "/r/%s/d/%s";
   private static final String CLIENT_PREFIX = "/r";
   private static final String AUTH_PASSWORD_PROPERTY = "auth_pass";
+  private static final String AUTH_KEY_PROPERTY = "auth_key";
+  private static final String AUTH_USER_PROPERTY = "auth_user";
   private static final String LAST_CONFIG_ACKED = "last_config_ack";
   private static final String CONFIG_SUFFIX = "/config";
   private static final String METADATA_STR_KEY = "metadata_str";
@@ -180,6 +182,9 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
 
     if (map.containsKey(AUTH_PASSWORD_PROPERTY)) {
       broker.authorize(clientId(registryId, deviceId), map.get(AUTH_PASSWORD_PROPERTY));
+    } else if (map.containsKey(AUTH_KEY_PROPERTY)) {
+      String password = GeneralUtils.sha256(map.get(AUTH_KEY_PROPERTY)).substring(0, 8);
+      broker.authorize(clientId(registryId, deviceId), password);
     }
     return properties;
   }
@@ -215,7 +220,9 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
       Credential cred = creds.get(0);
       checkState(cred.key_format == Key_format.PASSWORD,
           "key type not supported: " + cred.key_format);
-      properties.put(AUTH_PASSWORD_PROPERTY, cred.key_data);
+      ifNotNullThen(cred.password, p -> properties.put(AUTH_PASSWORD_PROPERTY, p));
+      ifNotNullThen(cred.username, u -> properties.put(AUTH_USER_PROPERTY, u));
+      ifNotNullThen(cred.key_data, k -> properties.put(AUTH_KEY_PROPERTY, k));
     }));
     return properties;
   }
@@ -268,6 +275,16 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
     cloudModel.gateway = new GatewayModel();
     cloudModel.gateway.proxy_ids =
         listBoundDevices(registryId, deviceId).keySet().stream().toList();
+
+    ifNotNullThen(properties.get(AUTH_PASSWORD_PROPERTY), p -> {
+      Credential credential = new Credential();
+      credential.key_format = Key_format.PASSWORD;
+      credential.password = p;
+      credential.username = properties.get(AUTH_USER_PROPERTY);
+      credential.key_data = properties.get(AUTH_KEY_PROPERTY);
+      cloudModel.credentials = List.of(credential);
+    });
+
     cloudModel.operation = READ;
     return cloudModel;
   }

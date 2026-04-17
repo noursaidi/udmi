@@ -13,7 +13,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "key_format",
-    "key_data"
+    "key_data",
+    "username",
+    "password"
 })
 public class Credential {
 
@@ -26,12 +28,18 @@ public class Credential {
     public Credential.Key_format key_format;
     @JsonProperty("key_data")
     public String key_data;
+    @JsonProperty("username")
+    public String username;
+    @JsonProperty("password")
+    public String password;
 
     @Override
     public int hashCode() {
         int result = 1;
+        result = ((result* 31)+((this.password == null)? 0 :this.password.hashCode()));
         result = ((result* 31)+((this.key_data == null)? 0 :this.key_data.hashCode()));
         result = ((result* 31)+((this.key_format == null)? 0 :this.key_format.hashCode()));
+        result = ((result* 31)+((this.username == null)? 0 :this.username.hashCode()));
         return result;
     }
 
@@ -44,7 +52,7 @@ public class Credential {
             return false;
         }
         Credential rhs = ((Credential) other);
-        return (((this.key_data == rhs.key_data)||((this.key_data!= null)&&this.key_data.equals(rhs.key_data)))&&((this.key_format == rhs.key_format)||((this.key_format!= null)&&this.key_format.equals(rhs.key_format))));
+        return (((((this.password == rhs.password)||((this.password!= null)&&this.password.equals(rhs.password)))&&((this.key_data == rhs.key_data)||((this.key_data!= null)&&this.key_data.equals(rhs.key_data))))&&((this.key_format == rhs.key_format)||((this.key_format!= null)&&this.key_format.equals(rhs.key_format))))&&((this.username == rhs.username)||((this.username!= null)&&this.username.equals(rhs.username))));
     }
 
 
