@@ -1594,8 +1594,7 @@ public class SequenceBase {
     String sanitizedDescription = sanitizedDescription(description);
     try {
       whileDoing(sanitizedDescription, () -> {
-        ifNotTrueThen(waitingForConfigSync.get(),
-            () -> updateConfig("before " + sanitizedDescription));
+        updateConfig("before " + sanitizedDescription);
         waitEvaluateLoop(sanitizedDescription, maxWait, evaluator, detail);
         recordSequence("Wait until", description);
       }, detail::get);
@@ -1751,9 +1750,8 @@ public class SequenceBase {
       } catch (Exception e) {
         catcher.accept(e);
         String detail = ifNotNullGet(detailer, Supplier::get);
-        // Don't include e in the new exception in order to preserve the detail as base cause.
         throw ifNotNullGet(detail,
-            message -> new RuntimeException(e.getMessage() + " because " + message), e);
+            message -> new RuntimeException(e.getMessage() + " because " + message, e), e);
       }
     } catch (AssumptionViolatedException e) {
       throw e;
@@ -1974,9 +1972,6 @@ public class SequenceBase {
         handleDeviceMessage(envelope, message, transactionId);
       }
 
-      if (!waitingForConfigSync.get() && message.containsKey(EXCEPTION_KEY)) {
-        throw new RuntimeException("Message exception: " + message.get(EXCEPTION_KEY));
-      }
     } catch (Exception e) {
       File exceptionOutFile = exceptionOutFile();
       error(format("Exception processing %s as %s: %s (in %s)", commandSignature, transactionId,
