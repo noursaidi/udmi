@@ -1605,7 +1605,7 @@ public class SequenceBase {
     } catch (Exception e) {
       String message = format("Failed waiting until %s: %s", sanitizedDescription, detail.get());
       recordSequence(message);
-      throw new RuntimeException(message);
+      throw new RuntimeException(message, e);
     }
   }
 
