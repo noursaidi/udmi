@@ -1594,8 +1594,6 @@ public class SequenceBase {
     String sanitizedDescription = sanitizedDescription(description);
     try {
       whileDoing(sanitizedDescription, () -> {
-        ifNotTrueThen(waitingForConfigSync.get(),
-            () -> updateConfig("before " + sanitizedDescription));
         waitEvaluateLoop(sanitizedDescription, maxWait, evaluator, detail);
         recordSequence("Wait until", description);
       }, detail::get);
@@ -1605,7 +1603,7 @@ public class SequenceBase {
     } catch (Exception e) {
       String message = format("Failed waiting until %s: %s", sanitizedDescription, detail.get());
       recordSequence(message);
-      throw new RuntimeException(message);
+      throw new RuntimeException(message, e);
     }
   }
 
@@ -1751,9 +1749,8 @@ public class SequenceBase {
       } catch (Exception e) {
         catcher.accept(e);
         String detail = ifNotNullGet(detailer, Supplier::get);
-        // Don't include e in the new exception in order to preserve the detail as base cause.
         throw ifNotNullGet(detail,
-            message -> new RuntimeException(e.getMessage() + " because " + message), e);
+            message -> new RuntimeException(e.getMessage() + " because " + message, e), e);
       }
     } catch (AssumptionViolatedException e) {
       throw e;
@@ -1790,7 +1787,6 @@ public class SequenceBase {
 
   private void untilLoop(String description, Supplier<Boolean> evaluator, Supplier<String> detail) {
     whileDoing(description, () -> {
-      updateConfig("before " + description);
       recordSequence("Wait for " + description);
       messageEvaluateLoop(evaluator);
     }, detail);
@@ -1960,6 +1956,14 @@ public class SequenceBase {
       envelope.publishTime = ofNullable(toDate(toInstant(ifNotNullGet(message, m ->
           (String) m.get("timestamp"))))).orElseGet(GeneralUtils::getNow);
 
+      if (message.containsKey(EXCEPTION_KEY)) {
+        String error = String.valueOf(message.get(EXCEPTION_KEY));
+        if (error.contains("While parsing version string 1.4")) {
+          debug("Skipping message with version 1.4 upgrade error");
+          return;
+        }
+      }
+
       recordRawMessage(envelope, message);
 
       preprocessMessage(envelope, message);
@@ -1974,9 +1978,6 @@ public class SequenceBase {
         handleDeviceMessage(envelope, message, transactionId);
       }
 
-      if (!waitingForConfigSync.get() && message.containsKey(EXCEPTION_KEY)) {
-        throw new RuntimeException("Message exception: " + message.get(EXCEPTION_KEY));
-      }
     } catch (Exception e) {
       File exceptionOutFile = exceptionOutFile();
       error(format("Exception processing %s as %s: %s (in %s)", commandSignature, transactionId,
@@ -1995,21 +1996,29 @@ public class SequenceBase {
   }
 
   private void validateMessage(Envelope attributes, Map<String, Object> message) {
-    String schemaName = format("%s_%s", attributes.subType, attributes.subFolder);
-    if (!isInterestingValidation(schemaName)) {
-      return;
+    try {
+      String schemaName = format("%s_%s", attributes.subType, attributes.subFolder);
+      if (!isInterestingValidation(schemaName)) {
+        return;
+      }
+
+      String deviceId = attributes.deviceId;
+      ReportingDevice reportingDevice = new ReportingDevice(deviceId);
+
+      Envelope modified = GeneralUtils.deepCopy(attributes);
+      modified.deviceId = FAKE_DEVICE_ID; // Allow for non-standard device IDs.
+
+      messageValidator.validateDeviceMessage(reportingDevice, message, toStringMap(modified));
+      validationResults.computeIfAbsent(messageCaptureBase(attributes),
+              key -> new ArrayList<>())
+          .addAll(reportingDevice.getMessageEntries());
+    } catch (Exception e) {
+      if (friendlyStackTrace(e).contains("While parsing version string 1.4")) {
+        debug("Skipping message validation due to version 1.4 upgrade error");
+        return;
+      }
+      throw e;
     }
-
-    String deviceId = attributes.deviceId;
-    ReportingDevice reportingDevice = new ReportingDevice(deviceId);
-
-    Envelope modified = GeneralUtils.deepCopy(attributes);
-    modified.deviceId = FAKE_DEVICE_ID; // Allow for non-standard device IDs.
-
-    messageValidator.validateDeviceMessage(reportingDevice, message, toStringMap(modified));
-    validationResults.computeIfAbsent(messageCaptureBase(attributes),
-            key -> new ArrayList<>())
-        .addAll(reportingDevice.getMessageEntries());
   }
 
   private void handlePipelineError(String subTypeRaw, Map<String, Object> message) {
