@@ -1962,20 +1962,24 @@ public class SequenceBase {
 
       recordRawMessage(envelope, message);
 
-      preprocessMessage(envelope, message);
+      try {
+        preprocessMessage(envelope, message);
 
-      validateMessage(envelope, message);
+        validateMessage(envelope, message);
 
-      if (proxiedDevice) {
-        handleProxyMessage(deviceId, envelope, message);
-      } else if (UPDATE.value().equals(subFolderRaw)) {
-        handleUpdateMessage(envelope, message, transactionId);
-      } else {
-        handleDeviceMessage(envelope, message, transactionId);
-      }
+        if (proxiedDevice) {
+          handleProxyMessage(deviceId, envelope, message);
+        } else if (UPDATE.value().equals(subFolderRaw)) {
+          handleUpdateMessage(envelope, message, transactionId);
+        } else {
+          handleDeviceMessage(envelope, message, transactionId);
+        }
 
-      if (!waitingForConfigSync.get() && message.containsKey(EXCEPTION_KEY)) {
-        throw new RuntimeException("Message exception: " + message.get(EXCEPTION_KEY));
+        if (!waitingForConfigSync.get() && message.containsKey(EXCEPTION_KEY)) {
+          throw new RuntimeException("Message exception: " + message.get(EXCEPTION_KEY));
+        }
+      } catch (SkipMessageException e) {
+        debug(e.getMessage());
       }
     } catch (Exception e) {
       File exceptionOutFile = exceptionOutFile();
@@ -2217,6 +2221,27 @@ public class SequenceBase {
   private void preprocessMessage(Envelope attributes, Map<String, Object> message) {
     if (getDeviceId().equals(attributes.deviceId) && SubType.STATE == attributes.subType) {
       updateConfigAcked(message);
+    }
+
+    String versionError = "While parsing version string 1.4";
+    Object exception = message.get(EXCEPTION_KEY);
+    Object error = message.get(Common.ERROR_KEY);
+    Object messageField = message.get(Common.MESSAGE_KEY);
+
+    boolean hasVersionError =
+        (exception != null && String.valueOf(exception).contains(versionError))
+            || (error != null && String.valueOf(error).contains(versionError))
+            || (messageField != null && String.valueOf(messageField).contains(versionError));
+
+    if (hasVersionError) {
+      throw new SkipMessageException("Suppressing message version error: " + versionError);
+    }
+  }
+
+  private static class SkipMessageException extends RuntimeException {
+
+    public SkipMessageException(String message) {
+      super(message);
     }
   }
 
