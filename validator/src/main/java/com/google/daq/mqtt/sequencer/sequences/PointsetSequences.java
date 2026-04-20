@@ -175,8 +175,17 @@ public class PointsetSequences extends PointsetBase {
   public void pointset_publish() {
     ifNullSkipTest(deviceConfig.pointset, "no pointset found in config");
     deviceConfig.pointset.sample_rate_sec = 10;
-    untilTrue("receive a pointset event",
-        () -> (countReceivedEvents(PointsetEvents.class) > 1));
+
+    popReceivedEvents(PointsetEvents.class);
+    untilTrue("receive a pointset event", () -> countReceivedEvents(PointsetEvents.class) > 0);
+
+    PointsetEvents lastEvent = popReceivedEvents(PointsetEvents.class).get(0);
+    Set<String> eventPoints = lastEvent.points.keySet();
+    Set<String> metadataPoints = deviceMetadata.pointset.points.keySet();
+    String prefix = format("metadata %s event %s differences: ",
+        isoConvert(deviceConfig.timestamp), isoConvert(lastEvent.timestamp));
+    checkThat("pointset event points match metadata",
+        prefixedDifference(prefix, metadataPoints, eventPoints));
   }
 
   /**
