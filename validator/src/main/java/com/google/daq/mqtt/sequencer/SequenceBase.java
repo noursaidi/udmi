@@ -1962,20 +1962,24 @@ public class SequenceBase {
 
       recordRawMessage(envelope, message);
 
-      preprocessMessage(envelope, message);
+      try {
+        preprocessMessage(envelope, message);
 
-      validateMessage(envelope, message);
+        validateMessage(envelope, message);
 
-      if (proxiedDevice) {
-        handleProxyMessage(deviceId, envelope, message);
-      } else if (UPDATE.value().equals(subFolderRaw)) {
-        handleUpdateMessage(envelope, message, transactionId);
-      } else {
-        handleDeviceMessage(envelope, message, transactionId);
-      }
+        if (proxiedDevice) {
+          handleProxyMessage(deviceId, envelope, message);
+        } else if (UPDATE.value().equals(subFolderRaw)) {
+          handleUpdateMessage(envelope, message, transactionId);
+        } else {
+          handleDeviceMessage(envelope, message, transactionId);
+        }
 
-      if (!waitingForConfigSync.get() && message.containsKey(EXCEPTION_KEY)) {
-        throw new RuntimeException("Message exception: " + message.get(EXCEPTION_KEY));
+        if (!waitingForConfigSync.get() && message.containsKey(EXCEPTION_KEY)) {
+          throw new RuntimeException("Message exception: " + message.get(EXCEPTION_KEY));
+        }
+      } catch (SkipMessageException e) {
+        debug(e.getMessage());
       }
     } catch (Exception e) {
       File exceptionOutFile = exceptionOutFile();
@@ -2219,13 +2223,21 @@ public class SequenceBase {
       updateConfigAcked(message);
     }
 
-    ifNotNullThen(message.get(EXCEPTION_KEY), ex -> {
-      String exception = ex instanceof Exception ? ((Exception) ex).getMessage() : String.valueOf(ex);
-      if (exception != null && exception.contains("While parsing version string 1.4")) {
-        debug("Suppressing message exception: " + exception);
-        message.remove(EXCEPTION_KEY);
+    Object exception = message.get(EXCEPTION_KEY);
+    ifNotNullThen(exception, ex -> {
+      String exceptionMessage =
+          ex instanceof Exception ? friendlyStackTrace((Exception) ex) : String.valueOf(ex);
+      if (exceptionMessage.contains("While parsing version string 1.4")) {
+        throw new SkipMessageException("Suppressing message version error: " + exceptionMessage);
       }
     });
+  }
+
+  private static class SkipMessageException extends RuntimeException {
+
+    public SkipMessageException(String message) {
+      super(message);
+    }
   }
 
   /**
