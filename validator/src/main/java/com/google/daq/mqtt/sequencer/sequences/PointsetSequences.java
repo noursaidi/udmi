@@ -2,15 +2,11 @@ package com.google.daq.mqtt.sequencer.sequences;
 
 import static com.google.daq.mqtt.util.TimePeriodConstants.THREE_MINUTES_MS;
 import static com.google.daq.mqtt.util.TimePeriodConstants.TWO_MINUTES_MS;
-import static com.google.udmi.util.GeneralUtils.CSV_JOINER;
 import static com.google.udmi.util.GeneralUtils.catchToElse;
 import static com.google.udmi.util.GeneralUtils.ifNotNullGet;
-import static com.google.udmi.util.GeneralUtils.ifNotNullThen;
-import static com.google.udmi.util.GeneralUtils.ifNotTrueGet;
 import static com.google.udmi.util.GeneralUtils.ifTrueThen;
 import static com.google.udmi.util.GeneralUtils.prefixedDifference;
 import static com.google.udmi.util.JsonUtil.isoConvert;
-import static com.google.udmi.util.JsonUtil.stringifyTerse;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
@@ -29,6 +25,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,33 +59,42 @@ public class PointsetSequences extends PointsetBase {
   }
 
   private void untilPointsetSanity() {
+    Set<String> metadataPoints = catchToElse(() ->
+        deviceMetadata.pointset.points.keySet(), ImmutableSet.of());
+    Set<String> configPoints = catchToElse(() ->
+        deviceConfig.pointset.points.keySet(), ImmutableSet.of());
+    Set<String> expectedPoints = new HashSet<>(metadataPoints);
+    expectedPoints.retainAll(configPoints);
+    untilPointsetSanity(expectedPoints);
+  }
+
+  private void untilPointsetSanity(Set<String> expectedEventPoints) {
     whileDoing("checking pointset sanity", () -> {
 
       waitUntil("pointset state matches config", EVENT_WAIT_DURATION, () -> {
-        Set<String> configPoints = deviceConfig.pointset.points.keySet();
-        Set<String> statePoints = catchToElse(() ->
-            deviceState.pointset.points.keySet(), ImmutableSet.of());
+        Set<String> configPoints = catchToElse(() -> deviceConfig.pointset.points.keySet(),
+            ImmutableSet.of());
+        Set<String> statePoints = catchToElse(() -> deviceState.pointset.points.keySet(),
+            ImmutableSet.of());
         String prefix = format("config %s state %s differences: ",
             isoConvert(deviceConfig.timestamp), isoConvert(deviceState.timestamp));
         return prefixedDifference(prefix, configPoints, statePoints);
       });
 
-      final AtomicReference<String> message = new AtomicReference<>("any received pointset event");
+      final AtomicReference<String> message = new AtomicReference<>("no pointset events received");
       waitUntil("pointset event contains correct points", EVENT_WAIT_DURATION, () -> {
         List<PointsetEvents> events = popReceivedEvents(PointsetEvents.class);
-        ifNotNullThen(ifNotTrueGet(events.isEmpty(), () -> events.get(events.size() - 1)),
-            lastEvent -> {
-              debug("last event is " + stringifyTerse(lastEvent));
-              Set<String> eventPoints = catchToElse(() -> lastEvent.points.keySet(),
-                  ImmutableSet.of());
-              debug(" event points are " + CSV_JOINER.join(eventPoints));
-              String prefix = format("metadata %s event %s differences: ",
-                  isoConvert(deviceMetadata.timestamp), isoConvert(lastEvent.timestamp));
-              Set<String> metadataPoints = catchToElse(() ->
-                  deviceMetadata.pointset.points.keySet(), ImmutableSet.of());
-              debug("metadata points are " + CSV_JOINER.join(metadataPoints));
-              message.set(prefixedDifference(prefix, metadataPoints, eventPoints));
-            });
+        for (PointsetEvents event : events) {
+          Set<String> eventPoints = catchToElse(() -> event.points.keySet(),
+              ImmutableSet.of());
+          String prefix = format("expected %s event %s differences: ",
+              isoConvert(deviceConfig.timestamp), isoConvert(event.timestamp));
+          String diff = prefixedDifference(prefix, expectedEventPoints, eventPoints);
+          message.set(diff);
+          if (diff == null) {
+            return null;
+          }
+        }
         return message.get();
       });
     });
@@ -112,6 +118,7 @@ public class PointsetSequences extends PointsetBase {
           () -> ifNotNullGet(deviceState.pointset.points.get(EXTRANEOUS_POINT),
               state -> state.status.category.equals(POINTSET_POINT_INVALID)
                   && state.status.level.equals(POINTSET_POINT_INVALID_VALUE)));
+      // When requesting an extraneous point, the device should still only report metadata points.
       untilPointsetSanity();
     } finally {
       deviceConfig.pointset.points.remove(EXTRANEOUS_POINT);
@@ -141,6 +148,7 @@ public class PointsetSequences extends PointsetBase {
     try {
       untilFalse("pointset state does not contain removed point",
           () -> deviceState.pointset.points.containsKey(name));
+      // After removing the point from config, the device should stop reporting it in telemetry.
       untilPointsetSanity();
     } finally {
       deviceConfig.pointset.points.put(name, removed);

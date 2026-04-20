@@ -2223,14 +2223,19 @@ public class SequenceBase {
       updateConfigAcked(message);
     }
 
+    String versionError = "While parsing version string 1.4";
     Object exception = message.get(EXCEPTION_KEY);
-    ifNotNullThen(exception, ex -> {
-      String exceptionMessage =
-          ex instanceof Exception ? friendlyStackTrace((Exception) ex) : String.valueOf(ex);
-      if (exceptionMessage.contains("While parsing version string 1.4")) {
-        throw new SkipMessageException("Suppressing message version error: " + exceptionMessage);
-      }
-    });
+    Object error = message.get(Common.ERROR_KEY);
+    Object messageField = message.get(Common.MESSAGE_KEY);
+
+    boolean hasVersionError =
+        (exception != null && String.valueOf(exception).contains(versionError))
+            || (error != null && String.valueOf(error).contains(versionError))
+            || (messageField != null && String.valueOf(messageField).contains(versionError));
+
+    if (hasVersionError) {
+      throw new SkipMessageException("Suppressing message version error: " + versionError);
+    }
   }
 
   private static class SkipMessageException extends RuntimeException {
