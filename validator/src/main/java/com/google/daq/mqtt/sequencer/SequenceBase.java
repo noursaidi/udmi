@@ -2218,6 +2218,14 @@ public class SequenceBase {
     if (getDeviceId().equals(attributes.deviceId) && SubType.STATE == attributes.subType) {
       updateConfigAcked(message);
     }
+
+    ifNotNullThen(message.get(EXCEPTION_KEY), ex -> {
+      String exception = ex instanceof Exception ? ((Exception) ex).getMessage() : String.valueOf(ex);
+      if (exception != null && exception.contains("While parsing version string 1.4")) {
+        debug("Suppressing message exception: " + exception);
+        message.remove(EXCEPTION_KEY);
+      }
+    });
   }
 
   /**
