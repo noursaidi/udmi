@@ -9,7 +9,6 @@ import static com.google.udmi.util.GeneralUtils.deepCopy;
 import static com.google.udmi.util.GeneralUtils.friendlyStackTrace;
 import static com.google.udmi.util.GeneralUtils.ifNotNullGet;
 import static com.google.udmi.util.GeneralUtils.ifNotNullThen;
-import static com.google.udmi.util.GeneralUtils.ifNotTrueThen;
 import static com.google.udmi.util.GeneralUtils.ifNullThen;
 import static com.google.udmi.util.GeneralUtils.isNullOrNotEmpty;
 import static com.google.udmi.util.GeneralUtils.requireNull;
@@ -53,7 +52,6 @@ import java.util.stream.Collectors;
 import udmi.schema.CloudModel;
 import udmi.schema.CloudModel.ModelOperation;
 import udmi.schema.CloudModel.Resource_type;
-import udmi.schema.Credential;
 import udmi.schema.Credential.Key_format;
 import udmi.schema.Envelope;
 import udmi.schema.Envelope.SubFolder;
@@ -80,12 +78,13 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   private static final String CLIENT_ID_FORMAT = "/r/%s/d/%s";
   private static final String CLIENT_PREFIX = "/r";
   private static final String AUTH_PASSWORD_PROPERTY = "auth_pass";
+  private static final String AUTH_KEY_PROPERTY = "auth_key";
   private static final String LAST_CONFIG_ACKED = "last_config_ack";
   private static final String CONFIG_SUFFIX = "/config";
   private static final String METADATA_STR_KEY = "metadata_str";
   private static final String RESOURCE_TYPE_PROPERTY = "resource_type";
   private final boolean enabled;
-  private final ConnectionBroker broker = new MosquittoBroker(this);
+  private final ConnectionBroker broker = getBroker();
   private final Future<Void> connLogger;
   private IotDataProvider database;
   private ReflectProcessor reflect;
@@ -98,6 +97,10 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
     super(iotAccess);
     enabled = isNullOrNotEmpty(options.get(ENABLED_KEY));
     connLogger = broker.addEventListener(CLIENT_PREFIX, this::brokerHandler);
+  }
+
+  ConnectionBroker getBroker() {
+    return new MosquittoBroker(this);
   }
 
   /**
@@ -175,12 +178,21 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
 
   private DataRef mungeDevice(String registryId, String deviceId, Map<String, String> map) {
     DataRef properties = registryDeviceRef(registryId, deviceId);
+
+    if (map.containsKey(AUTH_PASSWORD_PROPERTY)) {
+      String clientId = clientId(registryId, deviceId);
+      String password = map.remove(AUTH_PASSWORD_PROPERTY);
+      try {
+        broker.authorize(clientId, password);
+      } catch (Exception e) {
+        warn("Failed to authorize client %s: %s", clientId, friendlyStackTrace(e));
+      }
+    }
+    properties.delete(AUTH_PASSWORD_PROPERTY);
+
     map.forEach((key, value) ->
         ifNotNullThen(value, v -> properties.put(key, value), () -> properties.delete(key)));
 
-    if (map.containsKey(AUTH_PASSWORD_PROPERTY)) {
-      broker.authorize(clientId(registryId, deviceId), map.get(AUTH_PASSWORD_PROPERTY));
-    }
     return properties;
   }
 
@@ -193,6 +205,10 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   }
 
   private void sendConfigUpdate(String registryId, String deviceId, String config) {
+    if (reflect == null) {
+      warn("Reflect component not available for config update %s/%s", registryId, deviceId);
+      return;
+    }
     Envelope envelope = new Envelope();
     envelope.deviceRegistryId = registryId;
     envelope.deviceId = deviceId;
@@ -210,12 +226,12 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
     properties.put(METADATA_STR_KEY, stringifyTerse(cloudModel.metadata));
     properties.put(BLOCKED_PROPERTY, booleanString(cloudModel.blocked));
     ifNotNullThen(cloudModel.num_id, id -> properties.put(NUM_ID_PROPERTY, id));
-    ifNotNullThen(cloudModel.credentials, creds -> ifNotTrueThen(creds.isEmpty(), () -> {
-      checkState(creds.size() == 1, "only one credential supported");
-      Credential cred = creds.get(0);
-      checkState(cred.key_format == Key_format.PASSWORD,
-          "key type not supported: " + cred.key_format);
-      properties.put(AUTH_PASSWORD_PROPERTY, cred.key_data);
+    ifNotNullThen(cloudModel.credentials, creds -> creds.forEach(cred -> {
+      if (cred.key_format == Key_format.PASSWORD) {
+        properties.put(AUTH_PASSWORD_PROPERTY, cred.key_data);
+      } else if (!properties.containsKey(AUTH_KEY_PROPERTY)) {
+        properties.put(AUTH_KEY_PROPERTY, cred.key_data);
+      }
     }));
     return properties;
   }
@@ -229,13 +245,18 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
   private void updateDevice(String registryId, String deviceId, CloudModel cloudModel) {
     touchDeviceEntry(registryId, deviceId);
     Map<String, String> map = toDeviceMap(cloudModel, null);
-    mungeDevice(registryId, deviceId, map);
+    DataRef props = mungeDevice(registryId, deviceId, map);
+    Set<String> keepKeys = ImmutableSet.of(CREATED_AT_PROPERTY, NUM_ID_PROPERTY,
+        CONFIG_VER_KEY, LAST_CONFIG_KEY, LAST_STATE_KEY, LAST_CONFIG_ACKED, BOUND_TO_KEY);
+    props.entries().keySet().stream()
+        .filter(key -> !map.containsKey(key) && !keepKeys.contains(key))
+        .forEach(props::delete);
   }
 
   @Override
   public void activate() {
     database = UdmiServicePod.getComponent(IMPLICIT_DATABASE_COMPONENT);
-    reflect = UdmiServicePod.getComponent(ReflectProcessor.class);
+    reflect = UdmiServicePod.maybeGetComponent(ReflectProcessor.class);
     super.activate();
   }
 
@@ -373,6 +394,11 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
 
   @Override
   public void sendCommandBase(Envelope baseEnvelope, SubFolder folder, String message) {
+    if (reflect == null) {
+      warn("Reflect component not available for command to %s/%s",
+          baseEnvelope.deviceRegistryId, baseEnvelope.deviceId);
+      return;
+    }
     Envelope envelope = deepCopy(baseEnvelope);
     envelope.subFolder = folder;
     envelope.subType = SubType.COMMANDS;
