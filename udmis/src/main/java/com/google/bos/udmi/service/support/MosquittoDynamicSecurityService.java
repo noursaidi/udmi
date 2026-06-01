@@ -217,9 +217,9 @@ public class MosquittoDynamicSecurityService implements MqttCallback {
     }
 
     long latency = System.currentTimeMillis() - batch.get(0).timestamp;
-    log.info(String.format(
-        "Processed batch of %d items (%s MB), %d remaining in queue, latency %d ms",
-        batch.size(), (double) totalBytes / (1024 * 1024), commandQueue.size(), latency));
+    double megabytes = (double) totalBytes / 1024 / 1024;
+    log.info("Processed batch of {} items ({} MB), {} remaining in queue, latency {} ms",
+        batch.size(), megabytes, commandQueue.size(), latency);
 
     this.inFlightBatch = batch;
     publishBatchToBroker(batch);
@@ -444,6 +444,9 @@ public class MosquittoDynamicSecurityService implements MqttCallback {
     public final String password;
     public final String clientId;
     public final boolean isFallbackSupported;
+    /**
+     * Timestamp of command creation.
+     */
     public final long timestamp = System.currentTimeMillis();
 
     /**
