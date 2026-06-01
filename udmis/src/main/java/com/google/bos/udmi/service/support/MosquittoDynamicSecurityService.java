@@ -216,6 +216,9 @@ public class MosquittoDynamicSecurityService implements MqttCallback {
       return;
     }
 
+    log.info(String.format("Processed batch of %d items (%s MB), %d remaining in queue",
+        batch.size(), (double) totalBytes / 1024 / 1024, commandQueue.size()));
+
     this.inFlightBatch = batch;
     publishBatchToBroker(batch);
   }
