@@ -48,8 +48,8 @@ echo Lingering pubber processes:
 ps ax | fgrep pubber | fgrep java || true
 echo
 
-echo tar --exclude-vcs -czf /tmp/$ARCHIVE $site_model $OUT_DIR
-tar --exclude-vcs -czf /tmp/$ARCHIVE $site_model $OUT_DIR
+echo tar --exclude-vcs --ignore-failed-read -czf /tmp/$ARCHIVE $site_model $OUT_DIR
+tar --exclude-vcs --ignore-failed-read -czf /tmp/$ARCHIVE $site_model $OUT_DIR
 mv /tmp/$ARCHIVE .
 
 echo Created support archive $(realpath $ARCHIVE)
