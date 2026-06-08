@@ -27,12 +27,15 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -111,6 +114,10 @@ public final class MqttToPubSubBridge {
     String etcdTarget = commandLine.getOptionValue("etcd_target");
     String etcdOptions = commandLine.getOptionValue("etcd_options");
     String sourceAttribute = commandLine.getOptionValue("source_attribute", "bridge");
+    String excludeRegistriesRaw = commandLine.getOptionValue("exclude_registries");
+    Set<String> excludeRegistries = excludeRegistriesRaw == null ? Collections.emptySet()
+        : Splitter.on(',').trimResults().omitEmptyStrings().splitToStream(excludeRegistriesRaw)
+            .collect(Collectors.toSet());
 
     if (gcpProjectId == null || pubsubTopicId == null) {
       logger.error("gcp_project_id and pubsub_topic_id are required.");
@@ -151,7 +158,8 @@ public final class MqttToPubSubBridge {
       logger.info("Connected to MQTT broker.");
 
       // Set up MQTT Message Callback
-      setupBridge(mqttClient, publisher, mqttSubscriptionTopic, etcdProvider, sourceAttribute);
+      setupBridge(mqttClient, publisher, mqttSubscriptionTopic, etcdProvider, sourceAttribute,
+          excludeRegistries);
 
       // Keep the application running
       while (true) {
@@ -213,6 +221,7 @@ public final class MqttToPubSubBridge {
     options.addOption(null, "etcd_target", true, "etcd endpoint URL.");
     options.addOption(null, "etcd_options", true, "etcd provider options (comma-separated).");
     options.addOption(null, "source_attribute", true, "Value for the source attribute.");
+    options.addOption(null, "exclude_registries", true, "CSV list of registries to exclude.");
     options.addOption("h", "help", false, "Print usage info.");
 
     CommandLineParser parser = new DefaultParser();
@@ -237,7 +246,8 @@ public final class MqttToPubSubBridge {
    */
   public static void setupBridge(IMqttClient mqttClient, Publisher publisher,
       String mqttSubscriptionTopic, EtcdDataProvider etcdProvider) throws MqttException {
-    setupBridge(mqttClient, publisher, mqttSubscriptionTopic, etcdProvider, "bridge");
+    setupBridge(mqttClient, publisher, mqttSubscriptionTopic, etcdProvider, "bridge",
+        Collections.emptySet());
   }
 
   /**
@@ -251,6 +261,25 @@ public final class MqttToPubSubBridge {
    */
   public static void setupBridge(IMqttClient mqttClient, Publisher publisher,
       String mqttSubscriptionTopic, EtcdDataProvider etcdProvider, String sourceAttribute)
+      throws MqttException {
+    setupBridge(mqttClient, publisher, mqttSubscriptionTopic, etcdProvider, sourceAttribute,
+        Collections.emptySet());
+  }
+
+  /**
+   * Sets up the bridge between MQTT and Pub/Sub with a custom source attribute value.
+   *
+   * @param mqttClient            The MQTT client.
+   * @param publisher             The Pub/Sub publisher.
+   * @param mqttSubscriptionTopic The MQTT topic to subscribe to.
+   * @param etcdProvider          The etcd provider for device metadata.
+   * @param sourceAttribute       The value of the source attribute.
+   * @param excludedRegistries    The set of registry IDs to exclude.
+   * @throws MqttException If an MQTT error occurs.
+   */
+  public static void setupBridge(IMqttClient mqttClient, Publisher publisher,
+      String mqttSubscriptionTopic, EtcdDataProvider etcdProvider, String sourceAttribute,
+      Set<String> excludedRegistries)
       throws MqttException {
     mqttClient.setCallback(
         new MqttCallbackExtended() {
@@ -292,6 +321,11 @@ public final class MqttToPubSubBridge {
                 topicSuffix = matcher.group(3);
               } else {
                 logger.warn("Could not parse registry/device from topic: {}", topic);
+              }
+
+              if (excludedRegistries.contains(registryId)) {
+                logger.info("Ignoring message from excluded registry: {}", registryId);
+                return;
               }
 
               // Prepare Pub/Sub message

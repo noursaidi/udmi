@@ -12,6 +12,7 @@ import com.google.bos.udmi.service.support.EtcdDataProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.pubsub.v1.PubsubMessage;
 import java.util.Map;
+import java.util.Set;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -297,6 +298,38 @@ class MqttToPubSubBridgeTest {
     PubsubMessage pubsubMessage = pubsubMessageCaptor.getValue();
     Map<String, String> attributes = pubsubMessage.getAttributesMap();
     assertEquals("custom-source", attributes.get("source"));
+  }
+
+  @Test
+  void testSetupBridgeWithExcludedRegistry() throws Exception {
+    IMqttClient mockMqttClient = mock(IMqttClient.class);
+    Publisher mockPublisher = mock(Publisher.class);
+    String excludedRegistry = "excluded-registry";
+    Set<String> excludedRegistries = Set.of(excludedRegistry);
+
+    when(mockPublisher.publish(any(PubsubMessage.class)))
+        .thenReturn(ApiFutures.immediateFuture("msg-123"));
+
+    MqttToPubSubBridge.setupBridge(mockMqttClient, mockPublisher, "/r/+/d/#", null, "bridge",
+        excludedRegistries);
+
+    ArgumentCaptor<MqttCallbackExtended> callbackCaptor =
+        ArgumentCaptor.forClass(MqttCallbackExtended.class);
+    verify(mockMqttClient).setCallback(callbackCaptor.capture());
+    MqttCallbackExtended callback = callbackCaptor.getValue();
+
+    // Test excluded registry
+    String excludedTopic = "/r/" + excludedRegistry + "/d/my-device/events";
+    callback.messageArrived(excludedTopic, new MqttMessage("payload".getBytes()));
+    org.mockito.Mockito.verify(mockPublisher, org.mockito.Mockito.never())
+        .publish(any(PubsubMessage.class));
+
+    // Test allowed registry
+    String allowedRegistry = "allowed-registry";
+    String allowedTopic = "/r/" + allowedRegistry + "/d/my-device/events";
+    callback.messageArrived(allowedTopic, new MqttMessage("payload".getBytes()));
+    org.mockito.Mockito.verify(mockPublisher, org.mockito.Mockito.times(1))
+        .publish(any(PubsubMessage.class));
   }
 
 }
