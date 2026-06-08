@@ -305,7 +305,6 @@ class MqttToPubSubBridgeTest {
     IMqttClient mockMqttClient = mock(IMqttClient.class);
     Publisher mockPublisher = mock(Publisher.class);
     String excludedRegistry = "excluded-registry";
-    String allowedRegistry = "allowed-registry";
     Set<String> excludedRegistries = Set.of(excludedRegistry);
 
     when(mockPublisher.publish(any(PubsubMessage.class)))
@@ -326,6 +325,7 @@ class MqttToPubSubBridgeTest {
         .publish(any(PubsubMessage.class));
 
     // Test allowed registry
+    String allowedRegistry = "allowed-registry";
     String allowedTopic = "/r/" + allowedRegistry + "/d/my-device/events";
     callback.messageArrived(allowedTopic, new MqttMessage("payload".getBytes()));
     org.mockito.Mockito.verify(mockPublisher, org.mockito.Mockito.times(1))
