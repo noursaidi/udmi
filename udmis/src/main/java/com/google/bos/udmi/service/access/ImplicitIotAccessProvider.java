@@ -14,7 +14,6 @@ import static com.google.udmi.util.GeneralUtils.isNullOrNotEmpty;
 import static com.google.udmi.util.GeneralUtils.requireNull;
 import static com.google.udmi.util.JsonUtil.asMap;
 import static com.google.udmi.util.JsonUtil.isoConvert;
-import static com.google.udmi.util.JsonUtil.safeSleep;
 import static com.google.udmi.util.JsonUtil.stringify;
 import static com.google.udmi.util.JsonUtil.stringifyTerse;
 import static java.lang.String.format;
@@ -54,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -447,8 +447,8 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
             long delay = QUEUE_RETRY_DELAY_MS * (long) Math.pow(2, retryCount);
             warn("Queue full, retrying in %dms (retry %d/%d)...", delay, retryCount + 1,
                 MAX_QUEUE_RETRIES);
-            safeSleep(delay);
-            withQueueRetryInternal(action, retryCount + 1, resultFuture);
+            CompletableFuture.delayedExecutor(delay, TimeUnit.MILLISECONDS).execute(
+                () -> withQueueRetryInternal(action, retryCount + 1, resultFuture));
           } else {
             resultFuture.completeExceptionally(ex);
           }
@@ -459,8 +459,8 @@ public class ImplicitIotAccessProvider extends IotAccessBase {
         long delay = QUEUE_RETRY_DELAY_MS * (long) Math.pow(2, retryCount);
         warn("Queue full exception, retrying in %dms (retry %d/%d)...", delay, retryCount + 1,
             MAX_QUEUE_RETRIES);
-        safeSleep(delay);
-        withQueueRetryInternal(action, retryCount + 1, resultFuture);
+        CompletableFuture.delayedExecutor(delay, TimeUnit.MILLISECONDS).execute(
+            () -> withQueueRetryInternal(action, retryCount + 1, resultFuture));
       } else {
         resultFuture.completeExceptionally(e);
       }
