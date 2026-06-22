@@ -231,6 +231,7 @@ class LocalDevice implements SiteDevice {
   public void initialize() {
     prepareOutDir();
     populatePointUrls();
+    ifNotNullThen(metadata, m -> m.generation = JsonUtil.getDate(generation));
     ifTrueThen(deviceKind == DeviceKind.LOCAL && metadata != null, this::validateMetadata);
     configure();
   }

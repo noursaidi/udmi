@@ -26,6 +26,12 @@
       "description": "Original version of the UDMI schema for this file",
       "type": "string"
     },
+    "generation": {
+      "description": "RFC 3339 timestamp UTC the registrar started",
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2019-01-17T14:02:29.364Z"]
+    },
     "hash": {
       "description": "DEPRECATED",
       "type": "string",
