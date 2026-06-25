@@ -47,6 +47,17 @@ public class LocalDeviceTest {
     assertNull("raw cloud detail is defined", catchToNull(() -> rawMetadata.cloud.detail));
   }
 
+  @Test
+  public void generationSet() {
+    String testGeneration = JsonUtil.isoConvert();
+    SiteModel siteModel = new SiteModel(EMPTY_DEFAULTS_SITE);
+    LocalDevice localDevice = new LocalDevice(siteModel, DEVICE_ID, SCHEMAS, testGeneration,
+        DeviceKind.SIMPLE);
+    localDevice.initialize();
+    assertEquals("metadata generation set", testGeneration,
+        JsonUtil.isoConvert(localDevice.getMetadata().generation));
+  }
+
   private LocalDevice getTestInstance(String sitePath) {
     SiteModel siteModel = new SiteModel(sitePath);
     assertTrue("test device exists: " + DEVICE_ID, siteModel.deviceExists(DEVICE_ID));

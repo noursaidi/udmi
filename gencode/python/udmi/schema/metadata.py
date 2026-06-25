@@ -32,6 +32,7 @@ class Metadata(DataModel):
     timestamp: Optional[str] = None
     version: Optional[str] = None
     upgraded_from: Optional[str] = None
+    generation: Optional[str] = None
     hash: Optional[str] = None
     operation: Optional[Operation] = None
     cloud: Optional[CloudModel] = None
