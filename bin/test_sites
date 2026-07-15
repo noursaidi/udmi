@@ -38,6 +38,7 @@ function redact_files {
             -e 's-.*tests/sites/configs/-    REDACTED/sites/configs/-' \
             -e 's-^      File not found: /app/tests/sites/-    REDACTED/sites/-' \
             -e 's-^      File not found: .*udmi/tests/-    REDACTED/-' \
+             -e 's/([0-9]+ known properties: )("[^"]*"|, | )+/\1REDACTED/g' \
             $file
     done
 }
@@ -74,7 +75,7 @@ for subset in $subsets; do
     for device in $devices; do
         devicesout=$devicesdir/$device/out
         if [[ -d $devicesout ]]; then
-            find $devicesout -name \*.json | xargs -i bash -c "jq -e . {} >/dev/null 2>&1 && jq . {} | sponge {} || true"
+            find $devicesout -name \*.json | xargs -i bash -c "jq -e . {} >/dev/null 2>&1 && jq 'del(.generation)' {} | sponge {} || true"
             redact_files $devicesout/* $site_dir/registration_summary.json
             diffs=$(diff -rq $devicesout $devicesdir/$device/expected 2>&1) || true
             if [[ -n $diffs ]]; then

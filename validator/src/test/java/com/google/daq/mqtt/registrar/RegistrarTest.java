@@ -196,6 +196,18 @@ public class RegistrarTest {
   }
 
   @Test
+  public void generationTimestamp() {
+    List<MockAction> mockActions = executeRegistrarPopulated(ImmutableList.of());
+    List<MockAction> updateActions = filterActions(mockActions, UPDATE_DEVICE_ACTION);
+    updateActions.forEach(action -> {
+      CloudModel model = (CloudModel) action.data;
+      String udmiMetadata = model.metadata.get("udmi_metadata");
+      Metadata metadata = com.google.udmi.util.JsonUtil.fromString(Metadata.class, udmiMetadata);
+      assertTrue("metadata generation timestamp", metadata.generation != null);
+    });
+  }
+
+  @Test
   public void basicUpdates() {
     List<MockAction> mockActions = executeRegistrarPopulated(ImmutableList.of());
 
