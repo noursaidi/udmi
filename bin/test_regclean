@@ -216,6 +216,7 @@ echo $UDMI_ROOT/bin/pubber $pubber_config
 result=0
 timeout 120s $UDMI_ROOT/bin/pubber $pubber_config 2> $pubber_log || result=$?
 [[ $result == 0 ]] || fail Improper pubber failure code $result
+! fgrep "defaulting empty config" $pubber_log
 
 echo Now recreate the complete registry from scratch!
 echo $UDMI_ROOT/bin/registrar $site_args -u
@@ -245,6 +246,7 @@ echo $UDMI_ROOT/bin/pubber $pubber_config
 result=0
 timeout 120s $UDMI_ROOT/bin/pubber $pubber_config 2> $pubber_log || result=$?
 [[ $result == 0 ]] || fail Improper pubber failure code $result
+! fgrep "defaulting empty config" $pubber_log
 
 echo Successful pubber check passed on clean registry.
 
