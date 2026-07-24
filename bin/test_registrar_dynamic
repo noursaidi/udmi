@@ -6,6 +6,10 @@ source etc/shell_common.sh
 
 TEST_SITE=sites/udmi_site_model
 PROJECT_SPEC=${1:-//mqtt/localhost}
+
+echo '###################################' cleaning out registry
+bin/registrar ${TEST_SITE} $PROJECT_SPEC -P temporary -d -x
+
 find $TEST_SITE -name out | xargs rm -rf
 (cd $TEST_SITE; git checkout .)
 
