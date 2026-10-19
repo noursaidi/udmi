@@ -113,9 +113,9 @@ if [[ -z $prep ]]; then
 fi
 
 if [[ -n $prep ]]; then
-    rm -rf var tmp build && mkdir -p var tmp build
+    # Preserve build/ so a prebuilt jar in build/libs/ is reused by bin/build.
+    rm -rf var tmp && mkdir -p var tmp
     cp -f etc/*.json var/ || true
-    cp -a ../schema build/schema
 
     bin/build
 

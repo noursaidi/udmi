@@ -1,0 +1,16 @@
+# Monolithic distroless image containing only the prebuilt UDMI Java artifacts
+# (udmis, validator, services). No shell, no helper scripts, no site model.
+#
+# Build from the repository root after the component jars have been built:
+#   docker build -f etc/Dockerfile.monolith -t udmi/monolith .
+#
+# The base image entrypoint is ["/usr/bin/java", "-jar"] running as uid 65532,
+# so the jar and its arguments are supplied at runtime, e.g.:
+#   docker run ... udmi/monolith /udmi/udmis.jar /udmi/var/prod_pod.json
+#   docker run ... udmi/monolith /udmi/validator.jar <validator args>
+#   docker run ... udmi/monolith /udmi/services.jar <services args>
+FROM gcr.io/distroless/java21-debian12:nonroot
+
+COPY udmis/build/libs/udmis-1.0-SNAPSHOT-all.jar /udmi/udmis.jar
+COPY validator/build/libs/validator-1.0-SNAPSHOT-all.jar /udmi/validator.jar
+COPY services/build/libs/services-1.0-SNAPSHOT-all.jar /udmi/services.jar
